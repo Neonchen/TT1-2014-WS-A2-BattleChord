@@ -30,6 +30,7 @@ package de.uniba.wiai.lspi.chord.service.impl;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -432,6 +433,13 @@ public final class NodeImpl extends Node {
 		if (this.logger.isEnabledFor(DEBUG)) {
 			this.logger.debug(" Send broadcast message");
 		}
+		
+		List<Node> nodes = impl.getFingerTable();
+		Collections.sort(nodes);
+
+		ID ownId = impl.getID();
+		
+		//todo
 		
 		// finally inform application
 		if (this.notifyCallback != null) {
