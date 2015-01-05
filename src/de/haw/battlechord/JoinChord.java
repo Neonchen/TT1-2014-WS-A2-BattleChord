@@ -14,13 +14,15 @@ public class JoinChord {
 		String protocol = URL.KNOWN_PROTOCOLS.get(URL.SOCKET_PROTOCOL);
 		URL localURL = null;
 		try {
-			localURL = new URL(protocol + "://192.168.1.1:8181/");
+//			localURL = new URL(protocol + "://192.168.1.1:8181/");
+			localURL = new URL(protocol + "://localhost:8181/");
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
 		URL bootstrapURL = null;
 		try {
-			bootstrapURL = new URL(protocol + "://192.168.1.2:8080/");
+//			bootstrapURL = new URL(protocol + "://192.168.1.2:8080/");
+			bootstrapURL = new URL(protocol + "://localhost:8080/");
 			System.out.println(localURL);
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
