@@ -86,7 +86,9 @@ public final class NodeImpl extends Node {
 	 */
 	private Executor asyncExecutor;
 	
-	private Lock notifyLock; 
+	private Lock notifyLock;
+
+    private Integer transaction;
 
 	/**
 	 * Creates that part of the local node which answers remote requests by
@@ -128,6 +130,7 @@ public final class NodeImpl extends Node {
 		// create endpoint for incoming connections
 		this.myEndpoint = Endpoint.createEndpoint(this, nodeURL);
 		this.myEndpoint.listen();
+        this.transaction = new Integer(0);
 	}
 
 	/**
@@ -427,40 +430,49 @@ public final class NodeImpl extends Node {
 	// TODO: implement this function in TTP
 	@Override
 	public final void broadcast(Broadcast info) throws CommunicationException {
-		if (this.logger.isEnabledFor(DEBUG)) {
-			this.logger.debug(" Send broadcast message");
-		}
-		
-		List<Node> nodes = impl.getFingerTable();
-		Collections.sort(nodes);
-        ID range = info.getRange();
-        /**
-         * send to every node in fingerTable broadcast with successor in fingerTable as range
-         */
-        Node actNode;
-        ID actNodeID;
 
-        boolean send = true;
-        for(int count = 0; (count < nodes.size()) && send; count++){
-            actNode = nodes.get(count);
-            actNodeID = actNode.getNodeID();
-            if(actNodeID.compareTo(range) == -1) { //send, when actNodeID is smaller than range
-                try {
-                    actNode.broadcast(
-                            new Broadcast(nodes.get(count + 1).getNodeID(), info.getSource(), info.getTarget(), info.getTransaction(), info.getHit())
-                    );
-                } catch (CommunicationException e) {
-                    e.printStackTrace();
-                }
-            }else{
-                send = false;
+        Integer msgTransaction = info.getTransaction();
+        if(msgTransaction > this.transaction) {
+            this.transaction++;
+
+            if (this.logger.isEnabledFor(DEBUG)) {
+                this.logger.debug(" Send broadcast message");
             }
+
+            List<Node> nodes = impl.getFingerTable();
+            Collections.sort(nodes);
+            ID range = info.getRange();
+            /**
+             * send to every node in fingerTable broadcast with successor in fingerTable as range
+             */
+            Node actNode;
+            ID actNodeID;
+
+            boolean send = true;
+            for (int count = 0; (count < nodes.size()) && send; count++) {
+                actNode = nodes.get(count);
+                actNodeID = actNode.getNodeID();
+                if (actNodeID.compareTo(range) == -1) { //send, when actNodeID is smaller than range
+                    try {
+                        actNode.broadcast(
+                                new Broadcast(nodes.get(count + 1).getNodeID(), info.getSource(), info.getTarget(), this.transaction, info.getHit())
+                        );
+                    } catch (CommunicationException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    send = false;
+                }
+            }
+
+            // finally inform application
+            if (this.notifyCallback != null) {
+                this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
+            }
+        }else{
+            //old transaction ID, send nothing to nobody!
+            //TODO handle this case, if needed
         }
-		
-		// finally inform application
-		if (this.notifyCallback != null) {
-			this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
-		}
     }
 
 }
