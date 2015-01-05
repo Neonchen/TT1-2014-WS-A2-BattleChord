@@ -27,28 +27,19 @@
  ***************************************************************************/
 package de.uniba.wiai.lspi.chord.service.impl;
 
-import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
-import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import de.uniba.wiai.lspi.chord.com.Broadcast;
-import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Endpoint;
-import de.uniba.wiai.lspi.chord.com.Entry;
-import de.uniba.wiai.lspi.chord.com.Node;
-import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
+import de.uniba.wiai.lspi.chord.com.*;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.util.logging.Logger;
+
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
+import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
 /**
  * Implements all operations which can be invoked remotely by other nodes.
@@ -420,7 +411,13 @@ public final class NodeImpl extends Node {
 	}
 
 	/**
-	 * 
+	 * gets broadcast info with:
+     * ID range - send broadcast up to this ID
+     * ID source - attacking player/node
+     * ID target - key/HashID of attacked player
+     * Integer transaction - logical watch
+     * Boolean hit - ship hit or not
+     *
 	 * @return
 	 */
 	final Executor getAsyncExecutor() {
@@ -436,15 +433,34 @@ public final class NodeImpl extends Node {
 		
 		List<Node> nodes = impl.getFingerTable();
 		Collections.sort(nodes);
+        ID range = info.getRange();
+        /**
+         * send to every node in fingerTable broadcast with successor in fingerTable as range
+         */
+        Node actNode;
+        ID actNodeID;
 
-		ID ownId = impl.getID();
-		
-		//todo
+        boolean send = true;
+        for(int count = 0; (count < nodes.size()) && send; count++){
+            actNode = nodes.get(count);
+            actNodeID = actNode.getNodeID();
+            if(actNodeID.compareTo(range) == -1) { //send, when actNodeID is smaller than range
+                try {
+                    actNode.broadcast(
+                            new Broadcast(nodes.get(count + 1).getNodeID(), info.getSource(), info.getTarget(), info.getTransaction(), info.getHit())
+                    );
+                } catch (CommunicationException e) {
+                    e.printStackTrace();
+                }
+            }else{
+                send = false;
+            }
+        }
 		
 		// finally inform application
 		if (this.notifyCallback != null) {
 			this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
 		}
-	}
+    }
 
 }
