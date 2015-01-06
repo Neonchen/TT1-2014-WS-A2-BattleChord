@@ -1,14 +1,42 @@
 package de.haw.battlechord;
 
-import java.net.MalformedURLException;
-
-import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.Chord;
-import de.uniba.wiai.lspi.chord.service.NotifyCallback;
-import de.uniba.wiai.lspi.chord.service.ServiceException;
+import de.uniba.wiai.lspi.chord.data.ID;
 
 public class BattleChord {
 	public static void main(String[] args) {
-
+		
+	}
+	
+	BattleChord(int playerQuantity, int groundSize, int shipQuantity){
+		
+	}
+	
+	private void createAndJoinBattle(){
+		
+	}
+	
+	private void joinBattle(){
+		
+	}
+	
+	private void leaveBattle(){
+		
+	}
+	
+	private void attackTarget(){
+		
+	}
+	
+	private void evalAttack(){
+		
+	}
+	
+	private void announceVictory(){
+		
+	}
+	
+	private ID getNextTargetPlayer(){
+		return null;
+		
 	}
 }
