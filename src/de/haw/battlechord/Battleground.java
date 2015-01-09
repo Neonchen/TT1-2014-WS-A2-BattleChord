@@ -17,6 +17,9 @@ public class Battleground {
     Integer groundsize;
     BigInteger addressSpace;
 
+    ID ownID;
+    ID successorID;
+
     int UNKNOWN = 0;
     int WATER = 1;
     int SHIP = 2;
@@ -29,13 +32,15 @@ public class Battleground {
      * @param groundsize intervals on the battleground
      * @param shipQuantity number of ships to set
      */
-	public Battleground(ID startID, ID endID, Integer groundsize, int shipQuantity){
+	public Battleground(ID startID, ID endID, int groundsize, int shipQuantity){
+        this.ownID = startID;
+        this.successorID = endID;
         this.groundsize = groundsize;
 		this.shipsIntact = shipQuantity;
-        this.intervallSize = getDistance(startID,endID).divide(BigInteger.valueOf(groundsize.intValue()));
-        board.put(startID, WATER);
+        this.intervallSize = getDistance(ownID, successorID).divide(BigInteger.valueOf(groundsize));
+        board.put(ownID, UNKNOWN);
         for(Integer i = 1; i < 100; i++){
-            board.put(ID.valueOf(startID.toBigInteger().add( BigInteger.valueOf(i.intValue()).multiply(intervallSize) ) ), WATER);
+            board.put(ID.valueOf(ownID.toBigInteger().add( BigInteger.valueOf(i).multiply(intervallSize) ) ), WATER);
         }
         boardKeys = new ArrayList<ID>(board.keySet());
 	}
@@ -52,10 +57,18 @@ public class Battleground {
         board.put(playerID, UNKNOWN);
     }
 
+    public int getShipsIntact(){
+        return this.shipsIntact;
+    }
+
     public void setShips(){
         //TODO not to the last interval! (is ineffective)
         int shipsToSet = shipsIntact;
         ID field = null;
+        for(ID id : boardKeys){
+            board.remove(id);
+            board.put(id, WATER);
+        }
         while(shipsToSet > 0){
             field = getRandomBoardEntry();
             if(board.get(field) != SHIP){
@@ -105,15 +118,18 @@ public class Battleground {
 	}
 	
 	public ID getNextTargetField(){
-        ID field = null;
+        //TODO with strategy
+        ID target = null;
         boolean found = false;
+        Random r = new Random();
         while(!found){
-            field = getRandomBoardEntry();
-            if(board.get(field) == UNKNOWN){
+            target = ID.valueOf(BigInteger.valueOf(r.nextInt(this.addressSpace.intValue())));
+            if(!target.isInInterval(ownID, successorID)){
                 found = true;
             }
         }
-		return field;
+
+		return target;
 	}
 
     private ID getRandomBoardEntry(){
@@ -122,8 +138,7 @@ public class Battleground {
     }
 
     private BigInteger getDistance( ID from, ID to){
-        BigInteger distance=((this.addressSpace.subtract(from.toBigInteger())).add(to.toBigInteger())).mod(this.addressSpace);
-        return distance;
+        return((this.addressSpace.subtract(from.toBigInteger())).add(to.toBigInteger())).mod(this.addressSpace);
     }
 
 }
