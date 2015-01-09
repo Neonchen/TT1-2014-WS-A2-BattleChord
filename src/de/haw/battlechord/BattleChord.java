@@ -114,8 +114,29 @@ public class BattleChord {
          } else {
         	 System.out.println("Thats not an option sir!");
          }
-         scanner.close();
-         
+        
+        boolean run = true;
+        while(run){
+        	String cmd = scanner.next();
+        	
+        	switch(cmd) {
+	        	case "init":
+	        		game.init();
+	        		break;
+	        	case "quit":
+	        		game.leaveBattle();
+	        		run = false;
+	        		break;
+	        	case "status":
+	        		System.out.println(game.printPlayers());
+	        		break;
+	        	default:
+	        		System.out.println("Sir, I can't follow this command");
+	        		break;
+        	}
+        }
+    	System.out.println("Good Bye Commander!");
+        scanner.close();
 	}
 	
 	BattleChord(String ownIP, String ownPort, int playerQuantity, int groundSize, int shipQuantity){
@@ -155,13 +176,24 @@ public class BattleChord {
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
 		
-		players.put(chord.getID(), new Battleground(chord.getID(), knownPlayers.get(0).getNodeID(), groundsize, shipQuantity));
+		players.put(chord.getID(), new Battleground(chord.getID(), groundsize, shipQuantity));
 		
 		for(Node node : knownPlayers ){
 			this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
 		}
 	}
 	
+	private String printPlayers(){
+		String result = "ID | Ships Intact\n"
+						+ "------------------------------------------------------------\n";
+		
+		for(Map.Entry<ID, Battleground> entry: players.entrySet()){
+			result += (entry.getKey().equals(chord.getID()) ? ">" : "") + entry.getKey()+" | "+ entry.getValue().getShipsIntact();
+		}
+		
+		return result;
+	}
+
 	private void isNewPlayer(ID player){
 		
 	}
