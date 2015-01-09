@@ -3,10 +3,7 @@ package de.haw.battlechord;
 import de.uniba.wiai.lspi.chord.data.ID;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Battleground {
 
@@ -43,7 +40,7 @@ public class Battleground {
             board.put(ID.valueOf(ownID.toBigInteger().add( BigInteger.valueOf(i).multiply(intervallSize) ) ), WATER);
         }
         boardKeys = new ArrayList<ID>(board.keySet());
-        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
+        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
 	}
 
     /**
@@ -55,7 +52,9 @@ public class Battleground {
     public Battleground(ID playerID, int groundsize, int shipQuantity){
         this.groundsize = groundsize;
         this.shipsIntact = shipQuantity;
+        board = new HashMap<ID, Integer>();
         board.put(playerID, UNKNOWN);
+        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
     }
 
     public int getShipsIntact(){
