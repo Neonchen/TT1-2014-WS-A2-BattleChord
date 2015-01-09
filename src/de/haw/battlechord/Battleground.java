@@ -43,6 +43,7 @@ public class Battleground {
             board.put(ID.valueOf(ownID.toBigInteger().add( BigInteger.valueOf(i).multiply(intervallSize) ) ), WATER);
         }
         boardKeys = new ArrayList<ID>(board.keySet());
+        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
 	}
 
     /**
