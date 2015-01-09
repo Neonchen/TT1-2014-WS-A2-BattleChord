@@ -81,7 +81,6 @@ public class Battleground {
 	}
 	
 	public boolean isHit(ID target){
-        //id.isInInterval(ID, ID)
 		boolean hit = true;
         ID interval = null;
         ID from = boardKeys.get(0);
