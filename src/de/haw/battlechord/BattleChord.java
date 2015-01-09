@@ -12,7 +12,6 @@ import java.util.Scanner;
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
@@ -41,7 +40,7 @@ public class BattleChord {
 		 System.out.println("   ~~~~~~~~~~~~~");
 		 
 		 
-		 System.out.println("Use default properties? (y/n)");
+		 System.out.println("Use default properties? (join/create/no)");
          String useDefProp = scanner.next();
          
 		 String ownIP = "";
@@ -53,10 +52,10 @@ public class BattleChord {
 		 String bootstrapIP = "";
 		 String bootstrapPort = "";
          
-         if(useDefProp.equals("y")){
+         if(useDefProp.equals("join") || useDefProp.equals("create")){        	 
         	 Properties prop = new Properties();
     		 try {
-    			prop.load(new FileInputStream("src/battlechord.properties"));
+    			prop.load(new FileInputStream("src/battlechord_"+useDefProp+".properties"));
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
@@ -122,6 +121,7 @@ public class BattleChord {
         	switch(cmd) {
 	        	case "init":
 	        		game.init();
+	        		System.out.println("Ready for battle commander!");
 	        		break;
 	        	case "quit":
 	        		game.leaveBattle();
@@ -188,7 +188,7 @@ public class BattleChord {
 						+ "------------------------------------------------------------\n";
 		
 		for(Map.Entry<ID, Battleground> entry: players.entrySet()){
-			result += (entry.getKey().equals(chord.getID()) ? ">" : "") + entry.getKey()+" | "+ entry.getValue().getShipsIntact();
+			result += (entry.getKey().equals(chord.getID()) ? ">" : "") + entry.getKey()+" | "+ entry.getValue().getShipsIntact()+"\n";
 		}
 		
 		return result;
