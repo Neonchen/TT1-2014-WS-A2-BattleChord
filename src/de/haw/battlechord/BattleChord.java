@@ -4,22 +4,28 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
+import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.Chord;
 import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
+import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 
 public class BattleChord {
 	
 	URL localURL;
 	URL bootstrapURL;
-	Chord chord;
+	ChordImpl chord; //Chord interface limits functions too much
 	String protocol;
+	
+	int groundsize = 0;
+	int shipQuantity = 0;
 	
 	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
 	
@@ -143,22 +149,26 @@ public class BattleChord {
 	}
 	
 	private void leaveBattle(){
-		try {
-			chord.leave();
-		} catch (ServiceException e) {
-			throw new RuntimeException(e);
+		chord.leave();
+	}
+	
+	private void init(){
+		List<Node>knownPlayers = chord.getFingerTable();
+		
+		players.put(chord.getID(), new Battleground(chord.getID(), knownPlayers.get(0).getNodeID(), groundsize, shipQuantity));
+		
+		for(Node node : knownPlayers ){
+			this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
 		}
 	}
 	
 	private void isNewPlayer(ID player){
 		
 	}
-	
-	private void addPlayer(ID player, int groundsize, int shipQuantity){
 		
+	private void addPlayer(ID player, int groundsize, int shipQuantity){
+		 players.put(player, new Battleground(player, groundsize, shipQuantity));
 	}
-	
-	
 	
 	private void attackTarget(){
 		
