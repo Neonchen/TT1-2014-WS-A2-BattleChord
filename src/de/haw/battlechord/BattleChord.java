@@ -49,8 +49,8 @@ public class BattleChord {
 		 int groundSize = 0;
 		 int shipQuantity = 0;
 		 String mode = "";
-		 String bootstrapIP = "";
-		 String bootstrapPort = "";
+		 String bootstrapIP = "None";
+		 String bootstrapPort = "None";
          
          if(useDefProp.equals("join") || useDefProp.equals("create")){        	 
         	 Properties prop = new Properties();
