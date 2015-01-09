@@ -3,6 +3,8 @@ package de.haw.battlechord;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -18,6 +20,8 @@ public class BattleChord {
 	URL bootstrapURL;
 	Chord chord;
 	String protocol;
+	
+	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
 	
 	public static void main(String[] args) {
 		 Scanner scanner = new Scanner(System.in);
@@ -145,6 +149,16 @@ public class BattleChord {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private void isNewPlayer(ID player){
+		
+	}
+	
+	private void addPlayer(ID player, int groundsize, int shipQuantity){
+		
+	}
+	
+	
 	
 	private void attackTarget(){
 		
