@@ -175,10 +175,11 @@ public class BattleChord {
 		chord.leave();
 	}
 	
+	//TODO: exceptions not handled when chord ring is empty (chould just happen for chordring create node and no successor is available)
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
 		
-		players.put(chord.getID(), new Battleground(chord.getID(), groundsize, shipQuantity));
+		players.put(chord.getID(), new Battleground(chord.getID(), this.getSuccessor(), groundsize, shipQuantity));
 		
 		for(Node node : knownPlayers ){
 			this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
