@@ -3,6 +3,7 @@ package de.haw.battlechord;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +123,7 @@ public class BattleChord {
 	        	case "init":
 	        		game.init();
 	        		System.out.println("Ready for battle commander!");
+	        		if(game.hasHighestNodeId()) System.out.println("Enemies in range! FIIIIIRE ON YOUR COMMAND!");
 	        		break;
 	        	case "quit":
 	        		game.leaveBattle();
@@ -192,6 +194,17 @@ public class BattleChord {
 		}
 		
 		return result;
+	}
+	
+	private boolean hasHighestNodeId(){
+		return this.getSuccessor().compareTo(chord.getID()) == -1; 
+	}
+	
+	//TODO: exceptions not handled when fingerTable is empty (chould just happen for chordring create node)
+	private ID getSuccessor(){
+		List<Node> fingerTable = chord.getFingerTable();
+		Collections.sort(fingerTable);
+		return fingerTable.get(0).getNodeID();
 	}
 
 	private void isNewPlayer(ID player){
