@@ -46,7 +46,6 @@ public class BattleChord {
          
 		 String ownIP = "";
 		 String ownPort = "";
-		 int playerQuantity = 0;
 		 int groundSize = 0;
 		 int shipQuantity = 0;
 		 String mode = "";
@@ -63,7 +62,6 @@ public class BattleChord {
     		}
     		 ownIP = prop.getProperty("ownIP");
     		 ownPort = prop.getProperty("ownPort");
-    		 playerQuantity= Integer.parseInt(prop.getProperty("playerQuantity"));
     		 groundSize= Integer.parseInt(prop.getProperty("groundSize"));
     		 shipQuantity = Integer.parseInt(prop.getProperty("shipQuantity"));
     		 mode = prop.getProperty("mode");
@@ -74,8 +72,6 @@ public class BattleChord {
              ownIP = scanner.next();
              System.out.println("Enter Chord PORT:");
              ownPort = scanner.next();
-             System.out.println("Enter Player Quantity:");
-             playerQuantity = scanner.nextInt();
              System.out.println("Enter Battleground Size:");
              groundSize = scanner.nextInt();
              System.out.println("Enter Ship Quantity:");
@@ -96,7 +92,6 @@ public class BattleChord {
          System.out.println("\n--------------------"
          		+ "\nChord IP: "+ownIP
          		+ "\nChord PORT: "+ownPort
-         		+ "\nPlayer Quantity: "+playerQuantity
          		+ "\nBattleground Size: "+groundSize
          		+ "\nShip Quantity: "+shipQuantity
          		+ "\nMode: "+mode
@@ -105,7 +100,7 @@ public class BattleChord {
          		+ "\n--------------------"
          );
 
-    	BattleChord game = new BattleChord(ownIP,ownPort,playerQuantity,groundSize,shipQuantity);
+    	BattleChord game = new BattleChord(ownIP,ownPort,groundSize,shipQuantity);
          
         if(mode.equals("create")){
         	 game.createAndJoinBattle();
@@ -141,7 +136,7 @@ public class BattleChord {
         scanner.close();
 	}
 	
-	BattleChord(String ownIP, String ownPort, int playerQuantity, int groundSize, int shipQuantity){
+	BattleChord(String ownIP, String ownPort, int groundSize, int shipQuantity){
 		de.uniba.wiai.lspi.chord.service.PropertiesLoader.loadPropertyFile();
 		protocol = URL.KNOWN_PROTOCOLS.get(URL.SOCKET_PROTOCOL);
 		try {
