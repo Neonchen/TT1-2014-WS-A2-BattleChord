@@ -27,39 +27,21 @@
  ***************************************************************************/
 package de.uniba.wiai.lspi.chord.service.impl;
 
-import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
-import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
+import de.uniba.wiai.lspi.chord.com.*;
+import de.uniba.wiai.lspi.chord.data.ID;
+import de.uniba.wiai.lspi.chord.data.URL;
+import de.uniba.wiai.lspi.chord.service.*;
+import de.uniba.wiai.lspi.util.logging.Logger;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-import de.uniba.wiai.lspi.chord.com.Broadcast;
-import de.uniba.wiai.lspi.chord.com.CommunicationException;
-import de.uniba.wiai.lspi.chord.com.Entry;
-import de.uniba.wiai.lspi.chord.com.Node;
-import de.uniba.wiai.lspi.chord.com.Proxy;
-import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
-import de.uniba.wiai.lspi.chord.data.ID;
-import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.AsynChord;
-import de.uniba.wiai.lspi.chord.service.Chord;
-import de.uniba.wiai.lspi.chord.service.ChordCallback;
-import de.uniba.wiai.lspi.chord.service.ChordFuture;
-import de.uniba.wiai.lspi.chord.service.ChordRetrievalFuture;
-import de.uniba.wiai.lspi.chord.service.Key;
-import de.uniba.wiai.lspi.chord.service.NotifyCallback;
-import de.uniba.wiai.lspi.chord.service.Report;
-import de.uniba.wiai.lspi.chord.service.ServiceException;
-import de.uniba.wiai.lspi.util.logging.Logger;
+import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
+import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.INFO;
 
 /**
  * Implements all operations which can be invoked on the local node.
@@ -1116,6 +1098,13 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	//send broadcast to all nodes in finger table
 	@Override
 	public void broadcast (ID target, Boolean hit) {
+        ID newRange = ID.valueOf(getID().toBigInteger().subtract(BigInteger.ONE));
+        Broadcast info = new Broadcast(newRange, localID, target, 0 , hit);
+        try {
+            localNode.broadcast(info);
+        } catch (CommunicationException e) {
+            e.printStackTrace();
+        }
 		this.logger.debug("App called broadcast");
 	}
 	

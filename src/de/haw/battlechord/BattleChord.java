@@ -1,23 +1,15 @@
 package de.haw.battlechord;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Set;
-
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
-import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
 import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.*;
 
 public class BattleChord {
 	
@@ -28,6 +20,8 @@ public class BattleChord {
 	
 	int groundsize = 0;
 	int shipQuantity = 0;
+
+    Battleground battleground;
 	
 	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
 	
@@ -123,8 +117,7 @@ public class BattleChord {
 	        		if(game.hasHighestNodeId()) System.out.println("Enemies in range! FIIIIIRE ON YOUR COMMAND!");
 	        		break;
 	        	case "fire":
-	        		ID target = game.evalTarget();
-	        		game.attackTarget(target);
+	        		game.fire();
 	        		break;
 	        	case "quit":
 	        		game.leaveBattle();
@@ -151,7 +144,8 @@ public class BattleChord {
 			throw new RuntimeException(e);
 		}
 		chord = new de.uniba.wiai.lspi.chord.service.impl.ChordImpl();
-		NotifyCallback gameNotifyCallback = new GameNotifyCallback();
+		GameNotifyCallback gameNotifyCallback = new GameNotifyCallback();
+        gameNotifyCallback.setBattleChord(this);
 		chord.setCallback(gameNotifyCallback);
 		this.groundsize = groundSize;
 		this.shipQuantity = shipQuantity;
@@ -181,8 +175,8 @@ public class BattleChord {
 	//TODO: exceptions not handled when chord ring is empty (chould just happen for chordring create node and no successor is available)
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
-		
-		players.put(chord.getID(), new Battleground(chord.getID(), this.getSuccessor(), groundsize, shipQuantity));
+		this.battleground = new Battleground(chord.getID(), this.getSuccessor(), groundsize, shipQuantity);
+		players.put(chord.getID(), battleground);
 		
 		for(Node node : knownPlayers ){
 			this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
@@ -211,8 +205,20 @@ public class BattleChord {
 		return fingerTable.get(0).getNodeID();
 	}
 
-	private void isNewPlayer(ID player){
-		
+    public void fire(){
+        ID target = evalTarget();
+        attackTarget(target);
+    }
+
+    public void getShoot(ID target){
+        boolean hit = battleground.isHit(target);
+        System.out.println("They shoot on us! "+hit);
+        chord.broadcast(target, hit);
+        //fire();
+    }
+
+	private boolean isNewPlayer(ID player){
+		return players.containsKey(player);
 	}
 		
 	private void addPlayer(ID player, int groundsize, int shipQuantity){
@@ -223,13 +229,21 @@ public class BattleChord {
 		chord.retrieve(target);
 	}
 	
-	//TODO: random attack at first
+	//TODO: use strategy
+    //now shoot on successorID, which is known
 	private ID evalTarget(){
-        return players.keySet().iterator().next();
+        return getSuccessor();
 	}
+
+    public void newInformation(ID source, ID target, boolean hit){
+        if(isNewPlayer(source)){
+            addPlayer(source, groundsize, shipQuantity);
+        }
+        players.get(source).newInformation(target, hit);
+    }
 	
 	private void announceVictory(){
-		
+		//TODO broadcast to announce victory?
 	}
 	
 	private ID getNextTargetPlayer(){

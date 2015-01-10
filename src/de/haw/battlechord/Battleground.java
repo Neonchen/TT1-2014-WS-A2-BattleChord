@@ -49,6 +49,7 @@ public class Battleground {
      * @param shipQuantity number of ships to set
      */
     public Battleground(ID playerID, int groundsize, int shipQuantity){
+        this.ownID = playerID;
         this.groundsize = groundsize;
         this.shipsIntact = shipQuantity;
         board = new HashMap<ID, Integer>();
@@ -117,19 +118,41 @@ public class Battleground {
 	}
 	
 	public ID getNextTargetField(){
-        //TODO with strategy
+        //TODO this has to be player specific, to be called from the attacker
+        //which ID might get a hit?
+        return this.ownID;
+	}
+
+    /**
+     * Random ID in Adress Space, but not in the own board-intervall
+     * Used for a first-shoot, random
+     * @return ID of a foreign Player
+     */
+    public ID getForeignTargetField(){
         ID target = null;
         boolean found = false;
         Random r = new Random();
+        boolean ring = false;
+        if(ownID.compareTo(successorID)== 1) ring = true; //This means, the intervall is passing zero
         while(!found){
-            target = ID.valueOf(BigInteger.valueOf(r.nextInt(this.addressSpace.intValue())));
-            if(!target.isInInterval(ownID, successorID)){
+            BigInteger address;
+            do {
+                address = new BigInteger(this.addressSpace.bitLength(), r);
+            } while (address.compareTo(this.addressSpace) >= 0);
+            target = ID.valueOf(address);
+            if( (!ring      && !target.isInInterval(ownID, successorID)) ||
+                    (ring   && !target.isInInterval(ownID,new ID(addressSpace.toByteArray()))
+                            && !target.isInInterval(new ID(BigInteger.ZERO.toByteArray()),successorID) )){
                 found = true;
             }
         }
 
-		return target;
-	}
+        return target;
+    }
+
+    public void newInformation (ID target, boolean hit){
+        //handle new Information about this player
+    }
 	
 	//TODO: random field of board should just be random field of address space
     private ID getRandomBoardEntry(){

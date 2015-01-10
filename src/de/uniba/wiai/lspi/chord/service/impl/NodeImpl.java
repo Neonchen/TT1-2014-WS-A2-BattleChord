@@ -33,6 +33,7 @@ import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
@@ -426,13 +427,95 @@ public final class NodeImpl extends Node {
 	final Executor getAsyncExecutor() {
 		return this.asyncExecutor;
 	}
-	
+
 	// TODO: implement this function in TTP
 	@Override
 	public final void broadcast(Broadcast info) throws CommunicationException {
+        System.out.println("NodeImpl broadcast");
+        Integer transactionID = info.getTransaction().intValue();
 
-        Integer msgTransaction = info.getTransaction();
-        if(msgTransaction > this.transaction) {
+        ID ownID = this.getNodeID();
+        ID rangeID = info.getRange();
+        List<Node> nodes = impl.getFingerTable();
+        Collections.sort(nodes);
+
+        //maxID > range > ownId -> normal
+        if ((ownID.compareTo(rangeID) == -1) && (nodes.size() > 0)) {
+            ID newRange;
+            for (int i = 0; i < nodes.size(); i++) {
+                // if successor of actual node is larger than the given range
+                // send given range to actual node and break
+                if (nodes.get(i + 1).getNodeID().compareTo(rangeID) == 1) {
+                    System.out.println("1");
+                    sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID++);
+                    /*nodes.get(i).broadcast(
+                            new Broadcast(rangeID, info.getSource(), info.getTarget(), transactionID++, info.getHit())
+                    );*/
+                    i = nodes.size();
+                    // send actual node the broadcast with range up to successor node (in finger table)
+                } else {
+                    System.out.println("2");
+                    newRange = ID.valueOf(nodes.get(i + 1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
+                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
+                    /*nodes.get(i).broadcast(
+                            new Broadcast(
+                                    newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit()
+                        ));*/
+                }
+            }
+        }
+        //maxID > ownID > range -> over zero
+        else if (ownID.compareTo(rangeID) == 1 && (nodes.size() > 0)) {
+            ID newRange;
+            //there are two types of nodes here
+            // node > range //from here to max
+            //range > node //from zero to range
+            // all nodes got ther successor in fingertable as range
+            // the node with the highes value got the first (lowest) fingertable-entry (last node in fingertable)
+            // the last node with node < range < ownID got the range (successor is node > ownID >range)
+            //ignore the nodes with range < node < ownID
+            for (int i = 0; i < nodes.size(); i++) {
+                ID actNode = nodes.get(i).getNodeID();
+                ID actSuccessor = nodes.get(i + 1).getNodeID();
+                //ignore the nodes with range < node < ownID
+                if ((rangeID.compareTo(actNode) == -1) && (actNode.compareTo(ownID) == -1)) {
+                    System.out.println("3");
+                    //do nothing and do not break the loop
+                }
+                //last entry receives the range to the first entry
+                else if (i == nodes.size() - 1) {
+                    System.out.println("4");
+                    newRange = ID.valueOf(nodes.get(0).getNodeID().toBigInteger().subtract(BigInteger.ONE));
+                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
+                    /*nodes.get(i).broadcast(
+                            new Broadcast(newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit())
+                    );*/
+                }//last node to receive broadcast
+                else if ((actNode.compareTo(rangeID) == -1) && (actSuccessor.compareTo(rangeID) == 1)) {
+                    System.out.println("5");
+                    sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID++);
+                    /*nodes.get(i).broadcast(
+                            new Broadcast(rangeID, info.getSource(), info.getTarget(), transactionID++, info.getHit())
+                    );*/
+                }//all the other, normal nodes
+                else {
+                    System.out.println("6");
+                    newRange = ID.valueOf(actSuccessor.toBigInteger().subtract(BigInteger.ONE));
+                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
+                    /*nodes.get(i).broadcast(
+                            new Broadcast(newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit())
+                    );*/
+                }
+            }
+        } else {
+        } //do nothing
+    }
+
+
+
+        /*Integer msgTransaction = info.getTransaction();
+        if(msgTransaction > this.transaction || info.getSource().equals(this.getNodeID())) {
+            this.transaction = Math.max(msgTransaction,this.transaction);
             this.transaction++;
 
             if (this.logger.isEnabledFor(DEBUG)) {
@@ -442,17 +525,16 @@ public final class NodeImpl extends Node {
             List<Node> nodes = impl.getFingerTable();
             Collections.sort(nodes);
             ID range = info.getRange();
-            /**
-             * send to every node in fingerTable broadcast with successor in fingerTable as range
-             */
             Node actNode;
             ID actNodeID;
 
-            boolean send = true;
-            for (int count = 0; (count < nodes.size()) && send; count++) {
+            System.out.println("FingerTable size "+nodes.size());
+            for (int count = 0; (count < nodes.size()-1); count++) {
                 actNode = nodes.get(count);
                 actNodeID = actNode.getNodeID();
-                if (actNodeID.compareTo(range) == -1) { //send, when actNodeID is smaller than range
+                System.out.println("-------------------"+'\n'+actNode.getNodeID() +'\n'+ range);
+                //TODO handle the shit with the ring
+                if (actNodeID.compareTo(range) == 1) { //send, when actNodeID is smaller than range
                     try {
                         actNode.broadcast(
                                 new Broadcast(nodes.get(count + 1).getNodeID(), info.getSource(), info.getTarget(), this.transaction, info.getHit())
@@ -461,17 +543,32 @@ public final class NodeImpl extends Node {
                         e.printStackTrace();
                     }
                 } else {
-                    send = false;
+                    break;
                 }
+            }
+            if(nodes.size() > 0) {
+                nodes.get(nodes.size()).broadcast(
+                        new Broadcast(info.getRange(), info.getSource(), info.getTarget(), this.transaction, info.getHit())
+                );
             }
 
             // finally inform application
-            if (this.notifyCallback != null) {
+            if (this.notifyCallback != null && !info.getSource().equals(this.getNodeID())) {
                 this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
             }
         }else{
             //old transaction ID, send nothing to nobody!
-            //TODO handle this case, if needed
+            System.out.println("broadcast with outdated transactionID");
+            this.logger.info("broadcast with outdated transactionID");
+        }*/
+
+    private void sendBroadcastToNode(Node node, Broadcast info, ID range, Integer transaction){
+        try {
+            node.broadcast(new Broadcast(
+                    range, info.getSource(), info.getTarget(), transaction, info.getHit()
+            ));
+        } catch (CommunicationException e) {
+            e.printStackTrace();
         }
     }
 
