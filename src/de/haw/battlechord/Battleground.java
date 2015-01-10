@@ -8,7 +8,7 @@ import java.util.*;
 public class Battleground {
 
     int shipsIntact;
-    Map<ID,Integer> board;
+    Map<ID,Integer> board = new HashMap<ID, Integer>();
     List<ID> boardKeys;
     BigInteger intervallSize;
     Integer groundsize;
