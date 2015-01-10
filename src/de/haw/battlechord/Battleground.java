@@ -130,7 +130,8 @@ public class Battleground {
 
 		return target;
 	}
-
+	
+	//TODO: random field of board should just be random field of address space
     private ID getRandomBoardEntry(){
         Random r = new Random();
         return boardKeys.get(r.nextInt(boardKeys.size()));

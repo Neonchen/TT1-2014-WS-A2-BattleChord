@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 
 import de.uniba.wiai.lspi.chord.com.Node;
 import de.uniba.wiai.lspi.chord.data.ID;
@@ -120,6 +122,10 @@ public class BattleChord {
 	        		System.out.println("Ready for battle commander!");
 	        		if(game.hasHighestNodeId()) System.out.println("Enemies in range! FIIIIIRE ON YOUR COMMAND!");
 	        		break;
+	        	case "fire":
+	        		ID target = game.evalTarget();
+	        		game.attackTarget(target);
+	        		break;
 	        	case "quit":
 	        		game.leaveBattle();
 	        		run = false;
@@ -213,12 +219,13 @@ public class BattleChord {
 		 players.put(player, new Battleground(player, groundsize, shipQuantity));
 	}
 	
-	private void attackTarget(){
-		
+	private void attackTarget(ID target){
+		chord.retrieve(target);
 	}
 	
-	private void evalAttack(){
-		
+	//TODO: random attack at first
+	private ID evalTarget(){
+        return players.keySet().iterator().next();
 	}
 	
 	private void announceVictory(){
