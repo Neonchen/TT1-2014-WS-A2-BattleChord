@@ -152,6 +152,8 @@ public class BattleChord {
 		chord = new de.uniba.wiai.lspi.chord.service.impl.ChordImpl();
 		NotifyCallback gameNotifyCallback = new GameNotifyCallback();
 		chord.setCallback(gameNotifyCallback);
+		this.groundsize = groundSize;
+		this.shipQuantity = shipQuantity;
 	}
 	
 	private void createAndJoinBattle(){
