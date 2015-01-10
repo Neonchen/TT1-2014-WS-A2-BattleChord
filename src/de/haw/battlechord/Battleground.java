@@ -12,7 +12,7 @@ public class Battleground {
     List<ID> boardKeys;
     BigInteger intervallSize;
     Integer groundsize;
-    BigInteger addressSpace;
+    BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
 
     ID ownID;
     ID successorID;
@@ -40,7 +40,6 @@ public class Battleground {
             board.put(ID.valueOf(ownID.toBigInteger().add( BigInteger.valueOf(i).multiply(intervallSize) ) ), WATER);
         }
         boardKeys = new ArrayList<ID>(board.keySet());
-        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
 	}
 
     /**
