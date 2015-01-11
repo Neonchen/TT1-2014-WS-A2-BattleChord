@@ -424,152 +424,139 @@ public final class NodeImpl extends Node {
      *
 	 * @return
 	 */
-	final Executor getAsyncExecutor() {
-		return this.asyncExecutor;
+
+//	@Override
+//	public final void broadcast(Broadcast info1) throws CommunicationException {
+//		final Broadcast info=info1;
+//		  // asynchronos send broadcast message to current node
+//
+//		List<Node> ft=impl.getFingerTable();
+//		Collections.sort(ft);
+//		
+//		if(info1.getTransaction() > impl.getTransactionId()){
+//			impl.setTransactionId(info1.getTransaction());
+//			System.out.println("Informing the fleet!");
+//		    final Broadcast message=info1;
+//		    Node currentNode = ft.get(0);
+//			  (new Thread(){
+//		    	public void run(){
+//		    	try { 
+//					currentNode.broadcast(message); 
+//					
+//					
+//				} catch (CommunicationException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}}
+//		    }).start();
+//		} else {
+//			System.out.println("End this!");
+//		}
+//		// finally inform application
+//		if (this.notifyCallback != null) {
+//			this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
+//		}
+//	}
+	// TODO: implement this function in TTP
+	
+	public final void broadcast(Broadcast info) throws CommunicationException {
+        try{
+	        Integer transactionID = info.getTransaction().intValue();
+	
+	        ID ownID = this.getNodeID();
+	        ID rangeID = info.getRange();
+	        List<Node> nodes = impl.getFingerTable();
+	        Collections.sort(nodes);
+	
+	        //maxID > range > ownId -> normal
+	        
+	        if(info.getTransaction() > impl.getTransactionId()){
+				impl.setTransactionId(info.getTransaction());
+				System.out.println("Informing the fleet!");
+	        	
+				int ringIdLimitCheck= ownID.compareTo(rangeID);
+				
+				if (ringIdLimitCheck == -1){
+					System.out.println("Still in ring id limit");
+					for(int i = 0; i < nodes.size(); i++){
+						// if successor of current node is larger than the given range
+	                    // send given range to current node and break
+	                    if (nodes.get(i + 1).getNodeID().compareTo(rangeID) == 1) {
+	                    	System.out.println(">1");
+	                        sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID);
+	                        i = nodes.size();
+	                        // send current node the broadcast with range up to successor node (in finger table)
+	                    } else {
+	                    	System.out.println(">2");
+	                        ID newRange = ID.valueOf(nodes.get(i + 1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
+	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
+	                    }
+		        	}
+				} else if (ringIdLimitCheck == 1){
+					System.out.println("Past ring id limit");
+					
+					
+	                ID newRange;
+	                //there are two types of nodes here
+	                // node > range //from here to max
+	                //range > node //from zero to range
+	                // all nodes got their successor in fingertable as range
+	                // the node with the highest value get the first (lowest) fingertable-entry (last node in fingertable)
+	                // the last node with node < range < ownID got the range (successor is node > ownID > range)
+	                //ignore the nodes with range < node < ownID	                
+	                for (int i = 0; i < nodes.size(); i++) {	                    
+	                	ID currentNode = nodes.get(i).getNodeID();
+	                    
+	                    //ignore the nodes with range < node < ownID
+	                    if ((rangeID.compareTo(currentNode) == -1) && (currentNode.compareTo(ownID) == -1)) {
+	                    	System.out.println("~1");
+	                        //do nothing and do not break the loop
+	                    } else if (i == nodes.size() - 1) { //last entry receives the range to the first entry
+	                    	System.out.println("~2");
+	                        newRange = ID.valueOf(nodes.get(0).getNodeID().toBigInteger().subtract(BigInteger.ONE));
+	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
+	                    } else if ((currentNode.compareTo(rangeID) == -1) && (/*currentSuccessor*/nodes.get(i+1).getNodeID().compareTo(rangeID) == 1)) { //last node to receive broadcast
+	                    	System.out.println("~3");
+	                        sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID);
+	                    } else { //all the other, normal nodes
+	                    	System.out.println("~4");
+	                        newRange = ID.valueOf(/*currentSuccessor*/nodes.get(i+1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
+	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
+	                    }
+	                }
+				} else { //if (ringIdLimitCheck = 0)
+					System.out.println("Somethings wrong! This can not happen.");
+					
+				}
+		    } else {
+				System.out.println("Already got this information!");
+			}
+			
+		    // finally inform application
+		    if (this.notifyCallback != null && !info.getSource().equals(this.getNodeID())) {
+		        this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
+		    }
+        } catch (Exception e){
+        	System.out.println("Exception during Broadcast!");
+        	e.printStackTrace();
+        }
 	}
 
-	// TODO: implement this function in TTP
-	@Override
-	public final void broadcast(Broadcast info) throws CommunicationException {
-        System.out.println("NodeImpl broadcast");
-        Integer transactionID = info.getTransaction().intValue();
-
-        ID ownID = this.getNodeID();
-        ID rangeID = info.getRange();
-        List<Node> nodes = impl.getFingerTable();
-        Collections.sort(nodes);
-
-        //maxID > range > ownId -> normal
-        if ((ownID.compareTo(rangeID) == -1) && (nodes.size() > 0)) {
-            ID newRange;
-            for (int i = 0; i < nodes.size(); i++) {
-                // if successor of actual node is larger than the given range
-                // send given range to actual node and break
-                if (nodes.get(i + 1).getNodeID().compareTo(rangeID) == 1) {
-                    System.out.println("1");
-                    sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID++);
-                    /*nodes.get(i).broadcast(
-                            new Broadcast(rangeID, info.getSource(), info.getTarget(), transactionID++, info.getHit())
-                    );*/
-                    i = nodes.size();
-                    // send actual node the broadcast with range up to successor node (in finger table)
-                } else {
-                    System.out.println("2");
-                    newRange = ID.valueOf(nodes.get(i + 1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
-                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
-                    /*nodes.get(i).broadcast(
-                            new Broadcast(
-                                    newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit()
-                        ));*/
-                }
-            }
-        }
-        //maxID > ownID > range -> over zero
-        else if (ownID.compareTo(rangeID) == 1 && (nodes.size() > 0)) {
-            ID newRange;
-            //there are two types of nodes here
-            // node > range //from here to max
-            //range > node //from zero to range
-            // all nodes got ther successor in fingertable as range
-            // the node with the highes value got the first (lowest) fingertable-entry (last node in fingertable)
-            // the last node with node < range < ownID got the range (successor is node > ownID >range)
-            //ignore the nodes with range < node < ownID
-            for (int i = 0; i < nodes.size(); i++) {
-                ID actNode = nodes.get(i).getNodeID();
-                ID actSuccessor = nodes.get(i + 1).getNodeID();
-                //ignore the nodes with range < node < ownID
-                if ((rangeID.compareTo(actNode) == -1) && (actNode.compareTo(ownID) == -1)) {
-                    System.out.println("3");
-                    //do nothing and do not break the loop
-                }
-                //last entry receives the range to the first entry
-                else if (i == nodes.size() - 1) {
-                    System.out.println("4");
-                    newRange = ID.valueOf(nodes.get(0).getNodeID().toBigInteger().subtract(BigInteger.ONE));
-                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
-                    /*nodes.get(i).broadcast(
-                            new Broadcast(newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit())
-                    );*/
-                }//last node to receive broadcast
-                else if ((actNode.compareTo(rangeID) == -1) && (actSuccessor.compareTo(rangeID) == 1)) {
-                    System.out.println("5");
-                    sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID++);
-                    /*nodes.get(i).broadcast(
-                            new Broadcast(rangeID, info.getSource(), info.getTarget(), transactionID++, info.getHit())
-                    );*/
-                }//all the other, normal nodes
-                else {
-                    System.out.println("6");
-                    newRange = ID.valueOf(actSuccessor.toBigInteger().subtract(BigInteger.ONE));
-                    sendBroadcastToNode(nodes.get(i), info, newRange, transactionID++);
-                    /*nodes.get(i).broadcast(
-                            new Broadcast(newRange, info.getSource(), info.getTarget(), transactionID++, info.getHit())
-                    );*/
-                }
-            }
-        } else {
-        } //do nothing
-    }
-
-
-
-        /*Integer msgTransaction = info.getTransaction();
-        if(msgTransaction > this.transaction || info.getSource().equals(this.getNodeID())) {
-            this.transaction = Math.max(msgTransaction,this.transaction);
-            this.transaction++;
-
-            if (this.logger.isEnabledFor(DEBUG)) {
-                this.logger.debug(" Send broadcast message");
-            }
-
-            List<Node> nodes = impl.getFingerTable();
-            Collections.sort(nodes);
-            ID range = info.getRange();
-            Node actNode;
-            ID actNodeID;
-
-            System.out.println("FingerTable size "+nodes.size());
-            for (int count = 0; (count < nodes.size()-1); count++) {
-                actNode = nodes.get(count);
-                actNodeID = actNode.getNodeID();
-                System.out.println("-------------------"+'\n'+actNode.getNodeID() +'\n'+ range);
-                //TODO handle the shit with the ring
-                if (actNodeID.compareTo(range) == 1) { //send, when actNodeID is smaller than range
-                    try {
-                        actNode.broadcast(
-                                new Broadcast(nodes.get(count + 1).getNodeID(), info.getSource(), info.getTarget(), this.transaction, info.getHit())
-                        );
-                    } catch (CommunicationException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    break;
-                }
-            }
-            if(nodes.size() > 0) {
-                nodes.get(nodes.size()).broadcast(
-                        new Broadcast(info.getRange(), info.getSource(), info.getTarget(), this.transaction, info.getHit())
-                );
-            }
-
-            // finally inform application
-            if (this.notifyCallback != null && !info.getSource().equals(this.getNodeID())) {
-                this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
-            }
-        }else{
-            //old transaction ID, send nothing to nobody!
-            System.out.println("broadcast with outdated transactionID");
-            this.logger.info("broadcast with outdated transactionID");
-        }*/
-
     private void sendBroadcastToNode(Node node, Broadcast info, ID range, Integer transaction){
-        try {
-            node.broadcast(new Broadcast(
-                    range, info.getSource(), info.getTarget(), transaction, info.getHit()
-            ));
-        } catch (CommunicationException e) {
-            e.printStackTrace();
-        }
+    	if(!node.getNodeID().equals(info.getTarget())){ //Do not send when destination is target node to avoid double information
+	    	System.out.println("Sending to: "+node.getNodeID());
+	    	(new Thread(){
+		    	public void run(){
+		            try {
+		                node.broadcast(new Broadcast(
+		                        range, info.getSource(), info.getTarget(), transaction, info.getHit()
+		                ));
+		            } catch (CommunicationException e) {
+		                e.printStackTrace();
+		            }
+		    	}
+		    }).start();
+    	}
     }
 
 }

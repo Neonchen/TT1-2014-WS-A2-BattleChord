@@ -226,6 +226,7 @@ public class BattleChord {
 	}
 	
 	private void attackTarget(ID target){
+		System.out.println("BAM!");
 		chord.retrieve(target);
 	}
 	

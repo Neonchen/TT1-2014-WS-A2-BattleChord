@@ -1094,18 +1094,28 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		return ChordRemoveFuture.create(this.asyncExecutor, this, key, entry);
 	}
 	
+	int transactionID = 0;
 	// TODO: implement this function in TTP 
 	//send broadcast to all nodes in finger table
 	@Override
 	public void broadcast (ID target, Boolean hit) {
         ID newRange = ID.valueOf(getID().toBigInteger().subtract(BigInteger.ONE));
-        Broadcast info = new Broadcast(newRange, localID, target, 0 , hit);
+        Broadcast info = new Broadcast(newRange, localID, target, transactionID+1 , hit);
+
         try {
             localNode.broadcast(info);
         } catch (CommunicationException e) {
             e.printStackTrace();
         }
 		this.logger.debug("App called broadcast");
+	}
+	
+	public int getTransactionId(){
+		return transactionID;
+	}
+	
+	public void setTransactionId(int newTransactionID){
+        transactionID = newTransactionID;
 	}
 	
 	public void setCallback (NotifyCallback callback) {
