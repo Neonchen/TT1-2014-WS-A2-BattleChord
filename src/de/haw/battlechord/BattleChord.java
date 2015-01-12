@@ -126,6 +126,12 @@ public class BattleChord {
 	        	case "status":
 	        		System.out.println(game.printPlayers());
 	        		break;
+	        	case "ft":
+	        		System.out.println(game.printft());
+	        		break;
+	        	case "id":
+	        		System.out.println(game.getID());
+	        		break;
 	        	default:
 	        		System.out.println("Sir, I can't follow this command");
 	        		break;
@@ -192,6 +198,14 @@ public class BattleChord {
 		}
 		
 		return result;
+	}
+	
+	private String printft() {
+		return chord.printFingerTable();
+	}
+	
+	private ID getID(){
+		return chord.getID();
 	}
 	
 	private boolean hasHighestNodeId(){
