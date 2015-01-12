@@ -214,9 +214,19 @@ public class BattleChord {
 	
 	//TODO: exceptions not handled when fingerTable is empty (chould just happen for chordring create node)
 	private ID getSuccessor(){
+		Node successor;
 		List<Node> fingerTable = chord.getFingerTable();
 		Collections.sort(fingerTable);
-		return fingerTable.get(0).getNodeID();
+		int i = 0;
+		while((i < fingerTable.size()) && (chord.getID().compareTo(fingerTable.get(i).getNodeID()) > 0)){
+			i++;
+		}
+		if(i < fingerTable.size()){
+			successor = fingerTable.get(i);
+		} else {
+			successor = fingerTable.get(0);
+		}
+		return successor.getNodeID();
 	}
 
     public void fire(){
