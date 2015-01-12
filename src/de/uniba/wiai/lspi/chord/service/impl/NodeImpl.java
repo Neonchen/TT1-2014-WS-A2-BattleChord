@@ -556,6 +556,8 @@ public final class NodeImpl extends Node {
 		            }
 		    	}
 		    }).start();
+    	} else {
+    		System.out.println("Stop. Target already knows this.");
     	}
     }
 
