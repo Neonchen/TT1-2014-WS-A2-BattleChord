@@ -48,7 +48,7 @@ public class BattleChord {
 		 String bootstrapIP = "None";
 		 String bootstrapPort = "None";
          
-         if(useDefProp.equals("join") || useDefProp.equals("create")){        	 
+         if(useDefProp.startsWith("join") || useDefProp.equals("create")){        	 
         	 Properties prop = new Properties();
     		 try {
     			prop.load(new FileInputStream("src/battlechord_"+useDefProp+".properties"));
