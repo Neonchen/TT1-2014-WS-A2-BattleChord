@@ -218,7 +218,7 @@ public class BattleChord {
     }
 
 	private boolean isNewPlayer(ID player){
-		return players.containsKey(player);
+		return !players.containsKey(player);
 	}
 		
 	private void addPlayer(ID player, int groundsize, int shipQuantity){
@@ -237,8 +237,10 @@ public class BattleChord {
 	}
 
     public void newInformation(ID source, ID target, boolean hit){
+        System.out.println("New information from: "+source);
         if(isNewPlayer(source)){
-            addPlayer(source, groundsize, shipQuantity);
+            System.out.println("Adding player: "+source);
+        	addPlayer(source, groundsize, shipQuantity);
         }
         players.get(source).newInformation(target, hit);
     }
