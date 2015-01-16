@@ -60,10 +60,13 @@ public class Battleground {
      */
     private void initBoard(){
         if(predecessorID != null) {
+            BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
             for (Integer i = 0; i < groundsize; i++) {
-                board.put(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.valueOf(i).multiply(intervallSize))), UNKNOWN);
+                board.put(
+                        ID.valueOf(startID.add(BigInteger.valueOf(i).multiply(intervallSize)).mod(addressSpace)),
+                        UNKNOWN);
             }
-            boardKeys = new ArrayList<ID>(board.keySet());
+            boardKeys = new ArrayList<>(board.keySet());
             instantiated = true;
         }
     }
@@ -94,6 +97,7 @@ public class Battleground {
      */
     private void setPredecessorID (ID predecessor){
         this.predecessorID = predecessor;
+        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize));
         initBoard();
         setCollectedHitsToBoard();
     }
@@ -212,7 +216,7 @@ public class Battleground {
     }
 
     private BigInteger getDistance( ID from, ID to){
-        return((this.addressSpace.subtract(from.toBigInteger())).add(to.toBigInteger())).mod(this.addressSpace);
+        return to.toBigInteger().add(addressSpace).subtract(from.toBigInteger()).mod(addressSpace);
     }
 
 }
