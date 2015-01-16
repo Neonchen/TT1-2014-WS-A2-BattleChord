@@ -13,9 +13,11 @@ public class Battleground {
     BigInteger intervallSize;
     Integer groundsize;
     BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
+    Map<ID, Boolean> collectedHits = new HashMap<ID, Boolean>();
+    Boolean instantiated = false;
 
     ID ownID;
-    ID successorID;
+    ID predecessorID = null;
 
     int UNKNOWN = 0;
     int WATER = 1;
@@ -23,23 +25,19 @@ public class Battleground {
     int WRACK = 3;
 
     /**
-     * This constructor is used to instantiate own battleground
+     * This constructor is used to instantiate known battleground with UNKNOWN
      * @param startID and
      * @param endID define the range in adress space, used for battleground
      * @param groundsize intervals on the battleground
      * @param shipQuantity number of ships to set
      */
 	public Battleground(ID startID, ID endID, int groundsize, int shipQuantity){
-        this.ownID = startID;
-        this.successorID = endID;
+        this.predecessorID = startID;
+        this.ownID = endID;
         this.groundsize = groundsize;
 		this.shipsIntact = shipQuantity;
-        this.intervallSize = getDistance(ownID, successorID).divide(BigInteger.valueOf(groundsize));
-        board.put(ownID, UNKNOWN);
-        for(Integer i = 1; i < 100; i++){
-            board.put(ID.valueOf(ownID.toBigInteger().add( BigInteger.valueOf(i).multiply(intervallSize) ) ), WATER);
-        }
-        boardKeys = new ArrayList<ID>(board.keySet());
+        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize));
+        initBoard();
 	}
 
     /**
@@ -52,28 +50,34 @@ public class Battleground {
         this.ownID = playerID;
         this.groundsize = groundsize;
         this.shipsIntact = shipQuantity;
-        board = new HashMap<ID, Integer>();
-        board.put(playerID, UNKNOWN);
-        this.addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
     }
 
-    public int getShipsIntact(){
-        return this.shipsIntact;
+    /**
+     * init board based on calculatable intervals
+     * predecessorID has to be known
+     */
+    private void initBoard(){
+        if(predecessorID != null) {
+            for (Integer i = 0; i < 100; i++) {
+                board.put(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.valueOf(i).multiply(intervallSize))), UNKNOWN);
+            }
+            boardKeys = new ArrayList<ID>(board.keySet());
+            instantiated = true;
+        }
     }
 
     /**
      * Initially setting own ships into intervals
+     * set WATER on every field, then set SHIPs
      */
     public void setShips(){
-        //TODO not to the last interval! (is ineffective)
         int shipsToSet = shipsIntact;
-        ID field = null;
         for(ID id : boardKeys){
             board.remove(id);
             board.put(id, WATER);
         }
         while(shipsToSet > 0){
-            field = getRandomBoardEntry();
+            ID field = getRandomBoardEntry();
             if(board.get(field) != SHIP){
                 board.remove(field);
                 board.put(field, SHIP);
@@ -83,12 +87,36 @@ public class Battleground {
     }
 
     /**
+     * When predecessor is found, the Battleground can be instantiated
+     * @param predecessor
+     */
+    private void setPredecessorID (ID predecessor){
+        this.predecessorID = predecessor;
+        //calculate board
+        initBoard();
+        setCollectedHitsToBoard();
+    }
+
+    public int getShipsIntact(){
+        return this.shipsIntact;
+    }
+
+    /**
+     * Get attackable Player. Unknown player are difficult to attack
+     * @return true, when board is instantiated
+     */
+    public boolean isInstantiatedPlayer(){
+        return this.instantiated;
+    }
+
+
+    /**
      * Changes Battleground to save broadcast informations
      * set WATER / WRACK informations into Player intervals
      * @param target interval ID, that was attacked
      * @param hit boolean hit ship or water
      */
-	public void setHit(ID target, Boolean hit){
+	private void setHit(ID target, Boolean hit){
         if(board.get(target) != null) board.remove(target);
         if(!hit){
             board.put(target, WATER);
@@ -131,6 +159,11 @@ public class Battleground {
 		return shipsIntact == 0;
 	}
 
+    private void setCollectedHitsToBoard(){
+        //TODO sort collected hits and set to board
+        //attention: intervals might be attacked several times
+    }
+
     /**
      * For foreign players: get next field, that has not been attacked yet
      * @return ID in interval UNKNOWN
@@ -151,16 +184,16 @@ public class Battleground {
         boolean found = false;
         Random r = new Random();
         boolean ring = false;
-        if(ownID.compareTo(successorID)== 1) ring = true; //This means, the intervall is passing zero
+        if(predecessorID.compareTo(ownID)== 1) ring = true; //This means, the intervall is passing zero
         while(!found){
             BigInteger address;
             do {
                 address = new BigInteger(this.addressSpace.bitLength(), r);
             } while (address.compareTo(this.addressSpace) >= 0);
             target = ID.valueOf(address);
-            if( (!ring      && !target.isInInterval(ownID, successorID)) ||
-                    (ring   && !target.isInInterval(ownID,new ID(addressSpace.toByteArray()))
-                            && !target.isInInterval(new ID(BigInteger.ZERO.toByteArray()),successorID) )){
+            if( (!ring      && !target.isInInterval(predecessorID, ownID)) ||
+                    (ring   && !target.isInInterval(predecessorID,new ID(addressSpace.toByteArray()))
+                            && !target.isInInterval(new ID(BigInteger.ZERO.toByteArray()),ownID) )){
                 found = true;
             }
         }
@@ -170,6 +203,12 @@ public class Battleground {
 
     public void newInformation (ID target, boolean hit){
         //handle new Information about this player
+        if(predecessorID != null){
+            setHit(target, hit);
+        }else{
+            collectedHits.put(target, hit);
+        }
+        //TODO strategy stuff
     }
 	
 	//TODO: random field of board should just be random field of address space

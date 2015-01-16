@@ -21,8 +21,8 @@ public class BattleChord {
 	int groundsize = 0;
 	int shipQuantity = 0;
 
+    Node successor;
     Battleground battleground;
-	
 	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
 	
 	public static void main(String[] args) {
@@ -182,17 +182,23 @@ public class BattleChord {
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
 		this.battleground = new Battleground(chord.getPredecessorID(), chord.getID(), groundsize, shipQuantity);
+        this.battleground.setShips();
 		players.put(chord.getID(), battleground);
 
+        //set successor
+        this.successor = getSuccessor();
+
         //only known Player-Battleground is Successor
-        ID sucID = this.getSuccessor();
-        Battleground sucBattleGround = new Battleground(chord.getID(), sucID, groundsize, shipQuantity);
-        players.put(sucID, sucBattleGround);
-		for(Node node : knownPlayers ){
-            if(node.getNodeID().compareTo(sucID) != 0) {
-                this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
+        if(successor != null) {
+            ID sucID = this.successor.getNodeID();
+            Battleground sucBattleGround = new Battleground(chord.getID(), sucID, groundsize, shipQuantity);
+            players.put(sucID, sucBattleGround);
+            for (Node node : knownPlayers) {
+                if (node.getNodeID().compareTo(sucID) != 0) {
+                    this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
+                }
             }
-		}
+        }
 	}
 	
 	private String printPlayers(){
@@ -215,27 +221,32 @@ public class BattleChord {
 	}
 	
 	private boolean hasHighestNodeId(){
-		return this.getSuccessor().compareTo(chord.getID()) == -1; 
-	}
-	
-	//TODO: exceptions not handled when fingerTable is empty (chould just happen for chordring create node)
-	private ID getSuccessor(){
-		Node successor;
-		List<Node> fingerTable = chord.getSortedUniqueFingerTable();
-		int i = 0;
-		while((i < fingerTable.size()) && (chord.getID().compareTo(fingerTable.get(i).getNodeID()) > 0)){
-			i++;
-		}
-		if(i < fingerTable.size()){
-			successor = fingerTable.get(i);
-		} else {
-			successor = fingerTable.get(0);
-		}
-		return successor.getNodeID();
+		return this.successor.getNodeID().compareTo(chord.getID()) == -1;
 	}
 
+	private Node getSuccessor(){
+		Node successor = null;
+		List<Node> fingerTable = chord.getSortedUniqueFingerTable();
+		if(fingerTable.size() > 0) {
+            int i = 0;
+            while ((i < fingerTable.size()) && (chord.getID().compareTo(fingerTable.get(i).getNodeID()) > 0)) {
+                i++;
+            }
+            if (i < fingerTable.size()) {
+                successor = fingerTable.get(i);
+            } else {
+                successor = fingerTable.get(0);
+            }
+        }
+		return successor;
+	}
+
+    /**
+     * choose next player to attack, then id to attack for this player
+     * attack!
+     */
     public void fire(){
-        ID target = evalTarget();
+        ID target = evalTarget(getNextTargetPlayer());
         attackTarget(target);
     }
 
@@ -253,16 +264,18 @@ public class BattleChord {
 	private void addPlayer(ID player, int groundsize, int shipQuantity){
 		 players.put(player, new Battleground(player, groundsize, shipQuantity));
 	}
-	
+
+    /**
+     * send retrieve to execute attack
+     * @param target to shoot on
+     */
 	private void attackTarget(ID target){
 		System.out.println("BAM!");
 		chord.retrieve(target);
 	}
-	
-	//TODO: use strategy
-    //now shoot on successorID, which is known
-	private ID evalTarget(){
-        return getSuccessor();
+
+	private ID evalTarget(ID player){
+        return players.get(player).getNextTargetField();
 	}
 
     public void newInformation(ID source, ID target, boolean hit){
@@ -272,13 +285,21 @@ public class BattleChord {
         	addPlayer(source, groundsize, shipQuantity);
         }
         players.get(source).newInformation(target, hit);
+        if(players.get(source).isGameOver()){
+            announceVictory(source);
+        }
     }
 	
-	private void announceVictory(){
+	private void announceVictory(ID loser){
 		//TODO broadcast to announce victory?
 	}
-	
+
+    //now shoot on attackable Player
 	private ID getNextTargetPlayer(){
-		return null;
+        ID id = null;
+        do{
+            //TODO randomly choose Player
+        }while((players.get(id).isInstantiatedPlayer()));
+        return id;
 	}
 }
