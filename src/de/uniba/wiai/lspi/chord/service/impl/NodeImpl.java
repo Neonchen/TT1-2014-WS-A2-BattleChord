@@ -33,6 +33,7 @@ import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.NotifyCallback;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -424,8 +425,8 @@ public final class NodeImpl extends Node {
         try{
 	        ID rangeID = info.getRange();
 	        List<Node> nodes = impl.getSortedUniqueFingerTable();
-	       
-            BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
+
+            BigInteger addressSpace = new BigDecimal( Math.pow(2, 160) - 1).toBigInteger();
             if(info.getTransaction() > impl.getTransactionId()){
                 impl.setTransactionId(info.getTransaction());
                 System.out.println("Informing the fleet!");
