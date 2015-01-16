@@ -7,24 +7,24 @@ import java.util.*;
 
 public class Battleground {
 
-    int shipsIntact;
-    Map<ID,Integer> board = new HashMap<>();
-    List<ID> boardKeys;
-    BigInteger intervallSize;
-    Integer groundsize;
-    BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
-    Map<ID, Boolean> collectedHits = new HashMap<>();
-    Boolean instantiated = false;
+    private int shipsIntact;
+    private Map<ID,Integer> board = new HashMap<>();
+    private List<ID> boardKeys;
+    private BigInteger intervallSize;
+    private Integer groundsize;
+    private BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
+    private Map<ID, Boolean> collectedHits = new HashMap<>();
+    private Boolean instantiated = false;
 
-    Random random = new Random();
+    private Random random = new Random();
 
-    ID ownID;
-    ID predecessorID = null;
+    private ID ownID;
+    private ID predecessorID = null;
 
-    int UNKNOWN = 0;
-    int WATER = 1;
-    int SHIP = 2;
-    int WRACK = 3;
+    private int UNKNOWN = 0;
+    private int WATER = 1;
+    private int SHIP = 2;
+    private int WRACK = 3;
 
     /**
      * This constructor is used to instantiate known battleground with UNKNOWN
