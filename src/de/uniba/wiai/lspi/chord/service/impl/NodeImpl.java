@@ -437,12 +437,16 @@ public final class NodeImpl extends Node {
                     ID end = rangeID;
 
                     BigInteger distance = ( end.toBigInteger().add(addressSpace).subtract(begin.toBigInteger()) ).mod(addressSpace);
-                    if(distance.compareTo(BigInteger.ZERO) == 1){
+                    if(distance.compareTo(BigInteger.ZERO) > -1){
+                    	System.out.print("~~~~1");
                         if(i+1 < nodes.size()){
+                        	System.out.print("-2");
                             end = nodes.get(i+1).getNodeID();
                         }
+                        System.out.println("");
                         sendBroadcastToNode(nodes.get(i), info, end);
                     }else{
+                    	System.out.println("~~~~3");
                     	sendBroadcastToNode(nodes.get(i), info, end);
                         i = nodes.size();
                     }
@@ -512,13 +516,13 @@ public final class NodeImpl extends Node {
 
     private void sendBroadcastToNode(Node node, Broadcast info, ID range){
     	if(!node.getNodeID().equals(info.getTarget())){ //Do not send when destination is target node to avoid double information
-	    	System.out.println("Sending to: "+node.getNodeID());
 	    	(new Thread(){
 		    	public void run(){
 		            try {
-		                node.broadcast(new Broadcast(
-		                        range, info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()
-		                ));
+		            	Broadcast bc = new Broadcast(range, info.getSource(), info.getTarget(), info.getTransaction(), info.getHit());
+		            	System.out.println("Sending to: "+node.getNodeID());
+		            	System.out.println("\t => "+bc);
+		                node.broadcast(bc);
 		            } catch (CommunicationException e) {
 		                e.printStackTrace();
 		            }
