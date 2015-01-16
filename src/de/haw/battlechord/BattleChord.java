@@ -137,6 +137,9 @@ public class BattleChord {
 	        	case "target":
 	        		System.out.println(game.evalTarget(game.getNextTargetPlayer()));
 	        		break;
+	        	case "board":
+	        		System.out.println(game.battleground);
+	        		break;
 	        	default:
 	        		System.out.println("Sir, I can't follow this command");
 	        		break;
