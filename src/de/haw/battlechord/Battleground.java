@@ -60,7 +60,7 @@ public class Battleground {
      */
     private void initBoard(){
         if(predecessorID != null) {
-            for (Integer i = 0; i < 100; i++) {
+            for (Integer i = 0; i < groundsize; i++) {
                 board.put(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.valueOf(i).multiply(intervallSize))), UNKNOWN);
             }
             boardKeys = new ArrayList<ID>(board.keySet());
