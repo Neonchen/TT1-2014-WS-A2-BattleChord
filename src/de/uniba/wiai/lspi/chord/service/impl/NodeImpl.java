@@ -418,7 +418,7 @@ public final class NodeImpl extends Node {
         return this.references.getPredecessor().getNodeID();
     }
 
-	// TODO: implement this function in TTP
+	// TODO: still some double broadcast, probably should check the range again
 	
 	public final void broadcast(Broadcast info) throws CommunicationException {
         try{
@@ -435,7 +435,7 @@ public final class NodeImpl extends Node {
             if(info.getTransaction() > impl.getTransactionId()){
                 impl.setTransactionId(info.getTransaction());
                 System.out.println("Informing the fleet!");
-
+                
                 for(int i = 0; i < nodes.size(); i++){
                     //check the distance to final range
                     //when distance is <= 0, the range is reached and no more broadcasts will be send
@@ -447,12 +447,17 @@ public final class NodeImpl extends Node {
                         if(i+1 < nodes.size()){
                             end = nodes.get(i+1).getNodeID();
                         }
+                        sendBroadcastToNode(nodes.get(i), info, end);
                     }else{
+                    	sendBroadcastToNode(nodes.get(i), info, end);
                         i = nodes.size();
                     }
-                    nodes.get(i).broadcast(new Broadcast(end,info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()));
-
                 }
+    			
+    		    // finally inform application
+    		    if (this.notifyCallback != null && !info.getSource().equals(this.getNodeID())) {
+    		        this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
+    		    }
                 /*
 				int ringIdLimitCheck= ownID.compareTo(rangeID);
 				
@@ -505,25 +510,20 @@ public final class NodeImpl extends Node {
 		    } else {
 				System.out.println("Already got this information!");
 			}
-			
-		    // finally inform application
-		    if (this.notifyCallback != null && !info.getSource().equals(this.getNodeID())) {
-		        this.notifyCallback.broadcast(info.getSource(), info.getTarget(), info.getHit());
-		    }
         } catch (Exception e){
         	System.out.println("Exception during Broadcast!");
         	e.printStackTrace();
         }
 	}
 
-    private void sendBroadcastToNode(Node node, Broadcast info, ID range, Integer transaction){
+    private void sendBroadcastToNode(Node node, Broadcast info, ID range){
     	if(!node.getNodeID().equals(info.getTarget())){ //Do not send when destination is target node to avoid double information
 	    	System.out.println("Sending to: "+node.getNodeID());
 	    	(new Thread(){
 		    	public void run(){
 		            try {
 		                node.broadcast(new Broadcast(
-		                        range, info.getSource(), info.getTarget(), transaction, info.getHit()
+		                        range, info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()
 		                ));
 		            } catch (CommunicationException e) {
 		                e.printStackTrace();
