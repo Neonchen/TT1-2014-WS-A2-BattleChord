@@ -134,6 +134,9 @@ public class BattleChord {
 	        	case "id":
 	        		System.out.println(game.getID());
 	        		break;
+	        	case "target":
+	        		System.out.println(game.evalTarget(game.getNextTargetPlayer()));
+	        		break;
 	        	default:
 	        		System.out.println("Sir, I can't follow this command");
 	        		break;
