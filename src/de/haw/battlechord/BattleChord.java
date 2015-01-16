@@ -261,6 +261,13 @@ public class BattleChord {
         boolean hit = battleground.isHit(target);
         System.out.println("They shoot on us! "+hit);
         chord.broadcast(target, hit);
+        try {
+        	//else broadcast order on local machine is not given, bc can pass older bc
+			this.wait(100); 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         if(!gameover){
         	//fire();
         }
