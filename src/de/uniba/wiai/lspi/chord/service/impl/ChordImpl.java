@@ -34,12 +34,7 @@ import de.uniba.wiai.lspi.chord.service.*;
 import de.uniba.wiai.lspi.util.logging.Logger;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static de.uniba.wiai.lspi.util.logging.Logger.LogLevel.DEBUG;
@@ -1101,8 +1096,7 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 	//send broadcast to all nodes in finger table
 	@Override
 	public void broadcast (ID target, Boolean hit) {
-        ID newRange = ID.valueOf(getID().toBigInteger().subtract(BigInteger.ONE));
-        Broadcast info = new Broadcast(newRange, localID, target, transactionID+1 , hit);
+        Broadcast info = new Broadcast(localNode.getPredecessorID(), localID, target, transactionID+1 , hit);
 
         try {
             localNode.broadcast(info);

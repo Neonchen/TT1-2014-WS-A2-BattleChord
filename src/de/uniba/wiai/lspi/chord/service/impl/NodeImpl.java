@@ -413,6 +413,11 @@ public final class NodeImpl extends Node {
 					+ this.references.toString());
 		}
 	}
+
+    public ID getPredecessorID(){
+        return this.references.getPredecessor().getNodeID();
+    }
+
 	// TODO: implement this function in TTP
 	
 	public final void broadcast(Broadcast info) throws CommunicationException {
