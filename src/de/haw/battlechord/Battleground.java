@@ -194,7 +194,7 @@ public class Battleground {
         do{
             target = getRandomBoardEntry();
         }while(board.get(target) != UNKNOWN);
-        target = new ID(target.toBigInteger().add(intervallSize.divide(new BigInteger("2"))).toByteArray());
+        target = new ID(target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE))).toByteArray());
         return target;
 	}
 
