@@ -2,6 +2,7 @@ package de.haw.battlechord;
 
 import de.uniba.wiai.lspi.chord.data.ID;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
@@ -12,7 +13,7 @@ public class Battleground {
     private List<ID> boardKeys;
     private BigInteger intervallSize;
     private Integer groundsize;
-    private BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
+    private BigInteger addressSpace = new BigDecimal( Math.pow(2, 160) - 1).toBigInteger();
     private Map<ID, Boolean> collectedHits = new HashMap<ID, Boolean>();
     private Boolean instantiated = false;
 
@@ -61,9 +62,9 @@ public class Battleground {
     private void initBoard(){
         if(predecessorID != null) {
             BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
-            for (Integer i = 0; i < groundsize; i++) {
+            for (Long i = 0l; i < groundsize; i++) {
                 board.put(
-                        ID.valueOf(( startID.add(BigInteger.valueOf(i).multiply(intervallSize)) ).mod(addressSpace)),
+                        new ID(( ( startID.add(new BigInteger(i.toString()).multiply(intervallSize)) ).mod(addressSpace) ).toByteArray()),
                         UNKNOWN);
             }
             boardKeys = new ArrayList<ID>(board.keySet());
@@ -153,11 +154,12 @@ public class Battleground {
         ID interval = null;
         ID from = boardKeys.get(0);
         ID to;
-        for(int i = 1; i < 100; i ++){
+        for(int i = 1; i < groundsize; i ++){
             to = boardKeys.get(i);
+            if(i == groundsize-1) to = ownID; //for last interval
             if(target.isInInterval(from, to)){
                 interval = from;
-                i = 100;
+                i = groundsize;
             }
             from = to;
         }
@@ -220,9 +222,9 @@ public class Battleground {
     }
 
     public String toString(){
-        String s = "Battleground("+this.ownID+")";
+        String s = "Battleground("+this.ownID+")\n";
         for(ID id : boardKeys){
-            s+= id.toString()+"\n";
+            s+= "("+board.get(id)+")"+ id.toString()+"\n";
         }
         return s;
     }
