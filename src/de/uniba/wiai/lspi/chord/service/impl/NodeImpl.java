@@ -465,9 +465,8 @@ public final class NodeImpl extends Node {
 	
 	        ID ownID = this.getNodeID();
 	        ID rangeID = info.getRange();
-	        List<Node> nodes = impl.getFingerTable();
-	        Collections.sort(nodes);
-	
+	        List<Node> nodes = impl.getSortedUniqueFingerTable();
+	       
 	        //maxID > range > ownId -> normal
 	        
 	        if(info.getTransaction() > impl.getTransactionId()){

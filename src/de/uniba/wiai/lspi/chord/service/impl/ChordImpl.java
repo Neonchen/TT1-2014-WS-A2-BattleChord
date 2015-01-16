@@ -35,6 +35,8 @@ import de.uniba.wiai.lspi.util.logging.Logger;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1143,6 +1145,14 @@ public final class ChordImpl implements Chord, Report, AsynChord {
 		if (this.localNode != null) {
 			this.localNode.clearCallback();
 		}
+	}
+	
+	//in common ft is unsorted and not duplicate free
+	public List<Node> getSortedUniqueFingerTable() {
+		List<Node> nodes = new ArrayList<Node>();
+		nodes.addAll(new HashSet<>(getFingerTable()));
+		Collections.sort(nodes);
+		return nodes;
 	}
 
 }
