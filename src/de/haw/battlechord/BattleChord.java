@@ -291,7 +291,10 @@ public class BattleChord {
     }
 	
 	private void announceVictory(ID loser){
-		//TODO broadcast to announce victory?
+		System.out.println("VIIICTORY!!!");
+		System.out.println("You have fought well commander! It is a honor to serve you.");
+		System.out.println("Following fleet has been destroyed:\n\t"+loser);
+		System.out.println("Last hit information was:\n\t"+chord.getTransactionId());
 	}
 
     //now shoot on attackable Player
