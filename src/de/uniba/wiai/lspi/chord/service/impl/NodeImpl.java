@@ -441,16 +441,17 @@ public final class NodeImpl extends Node {
                     //when distance is <= 0, the range is reached and no more broadcasts will be send
                     ID begin = nodes.get(i).getNodeID();
                     ID end = rangeID;
-                    if(i+1 < nodes.size()){
-                        end = nodes.get(i+1).getNodeID();
-                    }
+
                     BigInteger distance = ( end.toBigInteger().add(addressSpace).subtract(begin.toBigInteger()) ).mod(addressSpace);
                     if(distance.compareTo(BigInteger.ZERO) == 1){
-                        nodes.get(i).broadcast(new Broadcast(end,info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()));
+                        if(i+1 < nodes.size()){
+                            end = nodes.get(i+1).getNodeID();
+                        }
                     }else{
-                        nodes.get(i).broadcast(new Broadcast(rangeID,info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()));
                         i = nodes.size();
                     }
+                    nodes.get(i).broadcast(new Broadcast(end,info.getSource(), info.getTarget(), info.getTransaction(), info.getHit()));
+
                 }
                 /*
 				int ringIdLimitCheck= ownID.compareTo(rangeID);
