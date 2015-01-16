@@ -25,6 +25,7 @@ public class BattleChord {
     Node successor;
     Battleground battleground;
 	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
+	private boolean gameover = false;
 	
 	public static void main(String[] args) {
 		 Scanner scanner = new Scanner(System.in);
@@ -254,7 +255,9 @@ public class BattleChord {
         boolean hit = battleground.isHit(target);
         System.out.println("They shoot on us! "+hit);
         chord.broadcast(target, hit);
-        //fire();
+        if(!gameover){
+        	//fire();
+        }
     }
 
 	private boolean isNewPlayer(ID player){
@@ -286,6 +289,7 @@ public class BattleChord {
         }
         players.get(source).newInformation(target, hit);
         if(players.get(source).isGameOver()){
+        	gameover  = true;
             announceVictory(source);
         }
     }
