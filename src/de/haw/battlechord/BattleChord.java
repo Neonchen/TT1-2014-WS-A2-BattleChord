@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class BattleChord {
 	
@@ -299,10 +300,15 @@ public class BattleChord {
 
     //now shoot on attackable Player
 	private ID getNextTargetPlayer(){
-        ID id = null;
-        do{
-            //TODO randomly choose Player
-        }while((players.get(id).isInstantiatedPlayer()));
-        return id;
+        Iterator<Entry<ID, Battleground>> playersIter = players.entrySet().iterator();
+        Entry<ID, Battleground> player = playersIter.next();
+        
+        if(!player.getValue().isInstantiatedPlayer()){
+	        while(playersIter.hasNext() && !player.getValue().isInstantiatedPlayer()){
+	        	player = playersIter.next();
+	        }
+        }
+
+        return player.getKey();
 	}
 }
