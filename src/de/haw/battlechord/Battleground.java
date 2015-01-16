@@ -63,9 +63,11 @@ public class Battleground {
         if(predecessorID != null) {
             BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
             for (Long i = 0l; i < groundsize; i++) {
+                ID id = new ID(startID.add(new BigInteger(i.toString()).multiply(intervallSize)).toByteArray());
                 board.put(
-                        new ID(( ( startID.add(new BigInteger(i.toString()).multiply(intervallSize)) ).mod(addressSpace) ).toByteArray()),
-                        UNKNOWN);
+
+                        new ID( (id.toBigInteger().mod(addressSpace)).toByteArray() ),
+                UNKNOWN);
             }
             boardKeys = new ArrayList<ID>(board.keySet());
             instantiated = true;
