@@ -38,7 +38,7 @@ public class Battleground {
         this.ownID = endID;
         this.groundsize = groundsize;
 		this.shipsIntact = shipQuantity;
-        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize));
+        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize)).abs();
         initBoard();
 	}
 
@@ -97,7 +97,7 @@ public class Battleground {
      */
     private void setPredecessorID (ID predecessor){
         this.predecessorID = predecessor;
-        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize));
+        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize)).abs();
         initBoard();
         setCollectedHitsToBoard();
     }
@@ -216,7 +216,7 @@ public class Battleground {
     }
 
     private BigInteger getDistance( ID from, ID to){
-        return to.toBigInteger().add(addressSpace).subtract(from.toBigInteger()).mod(addressSpace);
+        return (to.toBigInteger().add(addressSpace).subtract(from.toBigInteger())).mod(addressSpace);
     }
 
 }
