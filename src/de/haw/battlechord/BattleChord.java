@@ -260,6 +260,7 @@ public class BattleChord {
     public void getShoot(ID target){
         boolean hit = battleground.isHit(target);
         System.out.println("They shoot on us! "+hit);
+        battleground.newInformation(target, hit);
         chord.broadcast(target, hit);
         try {
         	//else broadcast order on local machine is not given, bc can pass older bc
@@ -269,7 +270,7 @@ public class BattleChord {
 			e.printStackTrace();
 		}
         if(!gameover){
-        	fire();
+        	//fire();
         }
     }
 

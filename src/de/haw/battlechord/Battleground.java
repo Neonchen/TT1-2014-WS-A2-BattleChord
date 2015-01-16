@@ -121,10 +121,11 @@ public class Battleground {
      * Changes Battleground to save broadcast informations
      * set WATER / WRACK informations into Player intervals
      * Do nothing, when content of field is already known
-     * @param target interval ID, that was attacked
+     * @param id interval ID, that was attacked
      * @param hit boolean hit ship or water
      */
-	private void setHit(ID target, Boolean hit){
+	private void setHit(ID id, Boolean hit){
+        ID target = attackedInterval(id);
         if (board.get(target) != null) {
             if(board.get(target) == UNKNOWN){
                 board.remove(target);
@@ -135,24 +136,23 @@ public class Battleground {
                     shipsIntact--;
                 }
             }else{ //set hit on own board
-                board.remove(target);
-                if (!hit) {
-                    board.put(target, WATER);
-                } else if (hit) {
+                System.out.println("change own board "+hit);
+                if (hit) {
+                    board.remove(target);
                     board.put(target, WRACK);
                     shipsIntact--;
+                    System.out.println("now it's a wrack");
                 }
             }
         }
     }
 
     /**
-     * method to check attack on own Battleground
+     * gets interval ID, where the target hits
      * @param target attacked ID
-     * @return true, if ID is in SHIP or WRACK interval, else false (WATER)
+     * @return ID of the hit interval
      */
-	public boolean isHit(ID target){
-		boolean hit = true;
+    private ID attackedInterval(ID target){
         ID interval = null;
         ID from = boardKeys.get(0);
         ID to;
@@ -165,7 +165,17 @@ public class Battleground {
             }
             from = to;
         }
-        int result = board.get(interval);
+        return interval;
+    }
+
+    /**
+     * method to check attack on own Battleground
+     * @param target attacked ID
+     * @return true, if ID is in SHIP or WRACK interval, else false (WATER)
+     */
+	public boolean isHit(ID target){
+		boolean hit = true;
+        int result = board.get(attackedInterval(target));
         if(result == WATER) hit = false;
         return hit;
 	}
