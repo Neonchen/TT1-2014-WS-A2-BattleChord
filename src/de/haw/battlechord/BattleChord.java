@@ -184,7 +184,6 @@ public class BattleChord {
 		List<Node>knownPlayers = chord.getFingerTable();
 		this.battleground = new Battleground(chord.getPredecessorID(), chord.getID(), groundsize, shipQuantity);
         this.battleground.setShips();
-		players.put(chord.getID(), battleground);
 
         //set successor
         this.successor = getSuccessor();
