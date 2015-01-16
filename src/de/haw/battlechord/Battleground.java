@@ -61,6 +61,9 @@ public class Battleground {
         return this.shipsIntact;
     }
 
+    /**
+     * Initially setting own ships into intervals
+     */
     public void setShips(){
         //TODO not to the last interval! (is ineffective)
         int shipsToSet = shipsIntact;
@@ -78,26 +81,33 @@ public class Battleground {
             }
         }
     }
-	
+
+    /**
+     * Changes Battleground to save broadcast informations
+     * set WATER / WRACK informations into Player intervals
+     * @param target interval ID, that was attacked
+     * @param hit boolean hit ship or water
+     */
 	public void setHit(ID target, Boolean hit){
-        if(board.get(target) != WRACK){
-            if(board.get(target) != null) board.remove(target);
-            if(!hit){
-                board.put(target, WATER);
-            }else if(hit){
-                board.put(target, WRACK);
-                shipsIntact --;
-            }
-        }else{
-            //ship on this field has been attacked before
+        if(board.get(target) != null) board.remove(target);
+        if(!hit){
+            board.put(target, WATER);
+        }else if(hit){
+            board.put(target, WRACK);
+            shipsIntact --;
         }
 	}
-	
+
+    /**
+     * method to check attack on own Battleground
+     * @param target attacked ID
+     * @return true, if ID is in SHIP or WRACK interval, else false (WATER)
+     */
 	public boolean isHit(ID target){
 		boolean hit = true;
         ID interval = null;
         ID from = boardKeys.get(0);
-        ID to = null;
+        ID to;
         for(int i = 1; i < 100; i ++){
             to = boardKeys.get(i);
             if(target.isInInterval(from, to)){
@@ -112,11 +122,19 @@ public class Battleground {
         }
         return hit;
 	}
-	
-	public boolean isGameOver(ID target){
+
+    /**
+     * check if battleground-owner is game over
+     * @return true, if all ships are destroyed. false else
+     */
+	public boolean isGameOver(){
 		return shipsIntact == 0;
 	}
-	
+
+    /**
+     * For foreign players: get next field, that has not been attacked yet
+     * @return ID in interval UNKNOWN
+     */
 	public ID getNextTargetField(){
         //TODO this has to be player specific, to be called from the attacker
         //which ID might get a hit?
