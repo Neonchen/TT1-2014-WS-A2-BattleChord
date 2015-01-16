@@ -8,12 +8,12 @@ import java.util.*;
 public class Battleground {
 
     private int shipsIntact;
-    private Map<ID,Integer> board = new HashMap<>();
+    private Map<ID,Integer> board = new HashMap<ID, Integer>();
     private List<ID> boardKeys;
     private BigInteger intervallSize;
     private Integer groundsize;
     private BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2, 160) - 1) );
-    private Map<ID, Boolean> collectedHits = new HashMap<>();
+    private Map<ID, Boolean> collectedHits = new HashMap<ID, Boolean>();
     private Boolean instantiated = false;
 
     private Random random = new Random();
@@ -63,10 +63,10 @@ public class Battleground {
             BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
             for (Integer i = 0; i < groundsize; i++) {
                 board.put(
-                        ID.valueOf(startID.add(BigInteger.valueOf(i).multiply(intervallSize)).mod(addressSpace)),
+                        ID.valueOf(( startID.add(BigInteger.valueOf(i).multiply(intervallSize)) ).mod(addressSpace)),
                         UNKNOWN);
             }
-            boardKeys = new ArrayList<>(board.keySet());
+            boardKeys = new ArrayList<ID>(board.keySet());
             instantiated = true;
         }
     }
@@ -194,7 +194,7 @@ public class Battleground {
         do{
             target = getRandomBoardEntry();
         }while(board.get(target) != UNKNOWN);
-        target = new ID(target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE))).toByteArray());
+        target = new ID( ( target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE))) ).toByteArray() );
         return target;
 	}
 
@@ -217,6 +217,14 @@ public class Battleground {
 
     private BigInteger getDistance( ID from, ID to){
         return (to.toBigInteger().add(addressSpace).subtract(from.toBigInteger())).mod(addressSpace);
+    }
+
+    public String toString(){
+        String s = "Battleground("+this.ownID+")";
+        for(ID id : boardKeys){
+            s+= id.toString()+"\n";
+        }
+        return s;
     }
 
 }
