@@ -181,11 +181,17 @@ public class BattleChord {
 	//TODO: exceptions not handled when chord ring is empty (chould just happen for chordring create node and no successor is available)
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
-		this.battleground = new Battleground(chord.getID(), this.getSuccessor(), groundsize, shipQuantity);
+		this.battleground = new Battleground(chord.getPredecessorID(), chord.getID(), groundsize, shipQuantity);
 		players.put(chord.getID(), battleground);
-		
+
+        //only known Player-Battleground is Successor
+        ID sucID = this.getSuccessor();
+        Battleground sucBattleGround = new Battleground(chord.getID(), sucID, groundsize, shipQuantity);
+        players.put(sucID, sucBattleGround);
 		for(Node node : knownPlayers ){
-			this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
+            if(node.getNodeID().compareTo(sucID) != 0) {
+                this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
+            }
 		}
 	}
 	
