@@ -422,15 +422,9 @@ public final class NodeImpl extends Node {
 	
 	public final void broadcast(Broadcast info) throws CommunicationException {
         try{
-	        Integer transactionID = info.getTransaction().intValue();
-	
-	        ID ownID = this.getNodeID();
 	        ID rangeID = info.getRange();
 	        List<Node> nodes = impl.getSortedUniqueFingerTable();
 	       
-	        //maxID > range > ownId -> normal
-
-            ID preID = this.references.getPredecessor().getNodeID();
             BigInteger addressSpace = BigInteger.valueOf( Math.round(Math.pow(2,160)-1) );
             if(info.getTransaction() > impl.getTransactionId()){
                 impl.setTransactionId(info.getTransaction());
