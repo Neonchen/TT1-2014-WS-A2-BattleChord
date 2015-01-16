@@ -476,26 +476,21 @@ public final class NodeImpl extends Node {
 	        	
 				int ringIdLimitCheck= ownID.compareTo(rangeID);
 				
-				if (ringIdLimitCheck == -1){
+				if (ringIdLimitCheck == -1){ //localNode is smaller than range (no wrap-around)
 					System.out.println("Still in ring id limit");
 					for(int i = 0; i < nodes.size(); i++){
-						// if successor of current node is larger than the given range
-	                    // send given range to current node and break
-	                    if (nodes.get(i + 1).getNodeID().compareTo(rangeID) == 1) {
+	                    if (nodes.get(i + 1).getNodeID().compareTo(rangeID) == 1) { //ft successor of current ft node is larger than the given range -> send given range to current ft node
 	                    	System.out.println(">1");
 	                        sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID);
-	                        i = nodes.size();
-	                        // send current node the broadcast with range up to successor node (in finger table)
-	                    } else {
+	                        i = nodes.size(); //break, rest is wrap-around
+	                    } else { //ft successor of current ft node is still in range -> send range until ft successor
 	                    	System.out.println(">2");
 	                        ID newRange = ID.valueOf(nodes.get(i + 1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
 	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
 	                    }
 		        	}
-				} else if (ringIdLimitCheck == 1){
+				} else if (ringIdLimitCheck == 1){ //localNode is bigger than range (wrap-around)
 					System.out.println("Past ring id limit");
-					
-					
 	                ID newRange;
 	                //there are two types of nodes here
 	                // node > range //from here to max
@@ -507,24 +502,23 @@ public final class NodeImpl extends Node {
 	                for (int i = 0; i < nodes.size(); i++) {	                    
 	                	ID currentNode = nodes.get(i).getNodeID();
 	                    
-	                    //ignore the nodes with range < node < ownID
-	                    if ((rangeID.compareTo(currentNode) == -1) && (currentNode.compareTo(ownID) == -1)) {
+	                    if ((rangeID.compareTo(currentNode) == -1) && (currentNode.compareTo(ownID) == -1)) {  //ignore the nodes with range < node < ownID
 	                    	System.out.println("~1");
 	                        //do nothing and do not break the loop
-	                    } else if (i == nodes.size() - 1) { //last entry receives the range to the first entry
+	                    } else if (i == (nodes.size() - 1)) { //last node of ft -> send the range until first node of ft
 	                    	System.out.println("~2");
 	                        newRange = ID.valueOf(nodes.get(0).getNodeID().toBigInteger().subtract(BigInteger.ONE));
 	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
-	                    } else if ((currentNode.compareTo(rangeID) == -1) && (/*currentSuccessor*/nodes.get(i+1).getNodeID().compareTo(rangeID) == 1)) { //last node to receive broadcast
+	                    } else if ((currentNode.compareTo(rangeID) == -1) && (/*successor*/nodes.get(i+1).getNodeID().compareTo(rangeID) == 1)) { //last node to receive broadcast
 	                    	System.out.println("~3");
 	                        sendBroadcastToNode(nodes.get(i), info, rangeID, transactionID);
-	                    } else { //all the other, normal nodes
+	                    } else { //normal case -> send the range until ft successor-1
 	                    	System.out.println("~4");
 	                        newRange = ID.valueOf(/*currentSuccessor*/nodes.get(i+1).getNodeID().toBigInteger().subtract(BigInteger.ONE));
 	                        sendBroadcastToNode(nodes.get(i), info, newRange, transactionID);
 	                    }
 	                }
-				} else { //if (ringIdLimitCheck = 0)
+				} else {//ringIdLimitCheck = 0 -> ownID == rangeID -> no range at all
 					System.out.println("Somethings wrong! This can not happen.");
 					
 				}
