@@ -262,13 +262,6 @@ public class BattleChord {
         System.out.println("They shoot on us! "+hit);
         battleground.newInformation(target, hit);
         chord.broadcast(target, hit);
-        try {
-        	//else broadcast order on local machine is not given, bc can pass older bc
-			this.wait(100); 
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         if(!gameover){
         	//fire();
         }
@@ -288,7 +281,8 @@ public class BattleChord {
      */
 	private void attackTarget(ID target){
 		System.out.println("BAM!");
-		chord.retrieve(target);
+		RetrieveThread retrieve= new RetrieveThread(chord, target);
+		retrieve.run();
 	}
 
 	private ID evalTarget(ID player){
