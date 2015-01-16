@@ -181,6 +181,7 @@ public class Battleground {
 
     /**
      * For foreign players: get next field, that has not been attacked yet
+     * Choose target in the middle of the interval
      * @return ID in interval UNKNOWN
      */
 	public ID getNextTargetField(){
@@ -189,6 +190,7 @@ public class Battleground {
         do{
             target = getRandomBoardEntry();
         }while(board.get(target) != UNKNOWN);
+        target = new ID(target.toBigInteger().add(intervallSize.divide(new BigInteger("2"))).toByteArray());
         return target;
 	}
 
