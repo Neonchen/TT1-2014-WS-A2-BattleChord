@@ -269,7 +269,7 @@ public class BattleChord {
 			e.printStackTrace();
 		}
         if(!gameover){
-        	//fire();
+        	fire();
         }
     }
 
