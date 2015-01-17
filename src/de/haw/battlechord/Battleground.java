@@ -150,7 +150,7 @@ public class Battleground {
         ID interval = null;
         ID to;
         for(ID from : boardKeys) {
-            to = ID.valueOf(from.toBigInteger().add(intervallSize));
+            to = ID.valueOf((from.toBigInteger().add(intervallSize)).mod(addressSpace));
             if(target.isInInterval(from, to)){
                 interval = from;
                 break;
