@@ -39,7 +39,7 @@ public class Battleground {
         this.ownID = endID;
         this.groundsize = groundsize;
 		this.shipsIntact = shipQuantity;
-        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize)).abs();
+        this.intervallSize = getDistance(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.ONE)),ownID).divide(BigInteger.valueOf(groundsize)).abs();
         initBoard();
 	}
 
@@ -63,10 +63,9 @@ public class Battleground {
         if(predecessorID != null) {
             BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
             for (Long i = 0l; i < groundsize; i++) {
-                ID id = new ID(startID.add(new BigInteger(i.toString()).multiply(intervallSize)).toByteArray());
+                BigInteger id = startID.add(new BigInteger(i.toString()).multiply(intervallSize));
                 board.put(
-
-                        new ID( (id.toBigInteger().mod(addressSpace)).toByteArray() ),
+                        ID.valueOf(id.mod(addressSpace)),
                 UNKNOWN);
             }
             boardKeys = new ArrayList<ID>(board.keySet());
@@ -100,7 +99,7 @@ public class Battleground {
      */
     private void setPredecessorID (ID predecessor){
         this.predecessorID = predecessor;
-        this.intervallSize = getDistance(predecessorID,ownID).divide(BigInteger.valueOf(groundsize)).abs();
+        this.intervallSize = getDistance(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.ONE)),ownID).divide(BigInteger.valueOf(groundsize)).abs();
         initBoard();
         setCollectedHitsToBoard();
     }
@@ -136,12 +135,10 @@ public class Battleground {
                     shipsIntact--;
                 }
             }else{ //set hit on own board
-                System.out.println("change own board "+hit);
                 if (hit) {
                     board.remove(target);
                     board.put(target, WRACK);
                     shipsIntact--;
-                    System.out.println("now it's a wrack");
                 }
             }
         }
@@ -174,10 +171,8 @@ public class Battleground {
      * @return true, if ID is in SHIP or WRACK interval, else false (WATER)
      */
 	public boolean isHit(ID target){
-		boolean hit = true;
         int result = board.get(attackedInterval(target));
-        if(result == WATER) hit = false;
-        return hit;
+        return (result == WATER);
 	}
 
     /**
@@ -235,6 +230,8 @@ public class Battleground {
 
     public String toString(){
         String s = "Battleground("+this.ownID+")\n";
+        s+= "Predecessor: "+this.predecessorID+"\n";
+        Collections.sort(boardKeys);
         for(ID id : boardKeys){
             s+= "("+board.get(id)+")"+ id.toString()+"\n";
         }
