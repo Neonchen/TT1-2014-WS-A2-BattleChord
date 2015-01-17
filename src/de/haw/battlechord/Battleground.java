@@ -135,7 +135,7 @@ public class Battleground {
                     shipsIntact--;
                 }
             }else{ //set hit on own board
-                if (hit) {
+                if (hit && (board.get(target) != WRACK)) {
                     board.remove(target);
                     board.put(target, WRACK);
                     shipsIntact--;
