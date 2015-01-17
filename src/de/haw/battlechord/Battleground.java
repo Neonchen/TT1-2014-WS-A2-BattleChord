@@ -203,7 +203,7 @@ public class Battleground {
         do{
             target = getRandomBoardEntry();
         }while(board.get(target) != UNKNOWN);
-        target = ID.valueOf((target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE)))));
+        target = ID.valueOf((target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE)))).mod(addressSpace));
         return target;
 	}
 
