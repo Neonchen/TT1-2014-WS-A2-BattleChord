@@ -172,7 +172,7 @@ public class Battleground {
      */
 	public boolean isHit(ID target){
         int result = board.get(attackedInterval(target));
-        return (result == WATER);
+        return (result != WATER);
 	}
 
     /**
@@ -203,7 +203,7 @@ public class Battleground {
         do{
             target = getRandomBoardEntry();
         }while(board.get(target) != UNKNOWN);
-        target = new ID( ( target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE))) ).toByteArray() );
+        target = ID.valueOf((target.toBigInteger().add(intervallSize.divide(BigInteger.ONE.add(BigInteger.ONE)))));
         return target;
 	}
 
