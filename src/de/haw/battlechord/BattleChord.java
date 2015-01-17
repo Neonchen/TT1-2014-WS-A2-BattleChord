@@ -9,6 +9,8 @@ import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -254,7 +256,11 @@ public class BattleChord {
      */
     public void fire(){
         ID target = evalTarget(getNextTargetPlayer());
-        attackTarget(target);
+        if(target.isInInterval(chord.getPredecessorID(), this.getID())){
+        	System.out.println("THIS COULD BE YOUR OWN SHIP! ;___;");
+        } else {
+        	attackTarget(target);
+        }
     }
 
     public void getShoot(ID target){
@@ -264,6 +270,8 @@ public class BattleChord {
         chord.broadcast(target, hit);
         if(!gameover){
         	//fire();
+        } else {
+        	System.out.println("Stop shooting!");
         }
     }
 
@@ -303,10 +311,17 @@ public class BattleChord {
     }
 	
 	private void announceVictory(ID loser){
-		System.out.println("VIIICTORY!!!");
-		System.out.println("You have fought well commander! It is a honor to serve you.");
-		System.out.println("Following fleet has been destroyed:\n\t"+loser);
-		System.out.println("Last hit information was:\n\t"+chord.getTransactionId());
+		DateFormat df = new SimpleDateFormat("HH:mm:ss:SSS");
+	    Date dateobj = new Date();
+	    
+		System.out.println(
+				"------------------------------------------------------------------\n"
+				+ "VIIICTORY!!!"+df.format(dateobj)+"\n"
+				+ "You have fought well commander! It is a honor to serve you.\n"
+				+ "Following fleet has been destroyed:\n\t"+loser+"\n"
+				+ "Last hit information was:\n\t"+chord.getTransactionId()+"\n"
+				+"-----------------------------------------------------------------"
+		);
 	}
 
     //now shoot on attackable Player
