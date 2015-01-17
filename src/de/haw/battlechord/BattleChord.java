@@ -142,6 +142,9 @@ public class BattleChord {
 	        	case "board":
 	        		System.out.println(game.battleground);
 	        		break;
+                case "sucboard":
+                    System.out.println(game.players.get(game.successor.getNodeID()));
+                    break;
 	        	default:
 	        		System.out.println("Sir, I can't follow this command");
 	        		break;

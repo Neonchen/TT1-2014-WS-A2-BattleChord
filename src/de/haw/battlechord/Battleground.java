@@ -126,6 +126,7 @@ public class Battleground {
 	private void setHit(ID id, Boolean hit){
         ID target = attackedInterval(id);
         if (board.get(target) != null) {
+            if(board.get(target) == UNKNOWN) {
                 board.remove(target);
                 if (!hit) {
                     board.put(target, WATER);
@@ -133,6 +134,10 @@ public class Battleground {
                     board.put(target, WRACK);
                     shipsIntact--;
                 }
+            }else if(hit && board.get(target) != WRACK){ //own board
+                board.remove(target);
+                board.put(target,WRACK);
+            }
         }
     }
 
@@ -143,14 +148,24 @@ public class Battleground {
      */
     private ID attackedInterval(ID target){
         ID interval = null;
+        Collections.sort(boardKeys);
         ID from = boardKeys.get(0);
         ID to;
         for(int i = 1; i < groundsize; i ++){
             to = boardKeys.get(i);
-            if(i == groundsize-1) to = ownID; //for last interval
-            if(target.isInInterval(from, to)){
-                interval = from;
-                i = groundsize;
+            if((from.compareTo(ownID) == 1) && (to.compareTo(ownID) == -1) ) { //over zero
+                //between from and max or between zero and to
+                if(target.isInInterval(from,ID.valueOf(addressSpace)) ||
+                        target.isInInterval(ID.valueOf(BigInteger.ZERO),to)){
+                    interval = from;
+                    i = groundsize;
+                }
+            }else{ //normal
+                if (i == groundsize - 1) to = ownID; //for last interval
+                if (target.isInInterval(from, to)) {
+                    interval = from;
+                    i = groundsize;
+                }
             }
             from = to;
         }
