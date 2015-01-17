@@ -126,7 +126,6 @@ public class Battleground {
 	private void setHit(ID id, Boolean hit){
         ID target = attackedInterval(id);
         if (board.get(target) != null) {
-            if(board.get(target) == UNKNOWN){
                 board.remove(target);
                 if (!hit) {
                     board.put(target, WATER);
@@ -134,13 +133,6 @@ public class Battleground {
                     board.put(target, WRACK);
                     shipsIntact--;
                 }
-            }else{ //set hit on own board
-                if (hit && (board.get(target) != WRACK)) {
-                    board.remove(target);
-                    board.put(target, WRACK);
-                    shipsIntact--;
-                }
-            }
         }
     }
 
