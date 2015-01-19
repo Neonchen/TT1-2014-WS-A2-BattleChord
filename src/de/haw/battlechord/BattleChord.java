@@ -12,6 +12,7 @@ import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,6 +33,11 @@ public class BattleChord {
     Battleground battleground;
 	Map<ID,Battleground> players = new HashMap<ID,Battleground>();
 	private boolean gameover = false;
+	private boolean chordInitPhase = true;
+	private ID highestKey = ID.valueOf(new BigDecimal( Math.pow(2, 160) - 1).toBigInteger());;
+	private ID curAttackSuc;
+	private boolean attacking;
+	private ID lastTarget;
 	
 	public static void main(String[] args) {
 		 Scanner scanner = new Scanner(System.in);
@@ -203,12 +209,11 @@ public class BattleChord {
 
         //set successor
         this.successor = getSuccessor();
-
+        this.curAttackSuc = getSuccessor().getNodeID();
         //only known Player-Battleground is Successor
         if(successor != null) {
             ID sucID = this.successor.getNodeID();
-            Battleground sucBattleGround = new Battleground(chord.getID(), sucID, groundsize, shipQuantity);
-            players.put(sucID, sucBattleGround);
+            this.addPlayerWithSpace(chord.getID(), sucID, groundsize, shipQuantity);
             for (Node node : knownPlayers) {
                 if (node.getNodeID().compareTo(sucID) != 0) {
                     this.addPlayer(node.getNodeID(), groundsize, shipQuantity);
@@ -238,8 +243,7 @@ public class BattleChord {
 	
 	private boolean ownsHighestKey(){
 		boolean result = false;
-		ID highestKey = ID.valueOf(new BigDecimal( Math.pow(2, 160) - 1).toBigInteger());
-		if(chord.getID().equals(highestKey) || (!chord.getPredecessorID().equals(highestKey) && chord.getPredecessorID().compareTo(getID()) == 1) ){
+		if(chord.getID().equals(this.highestKey) || (!chord.getPredecessorID().equals(this.highestKey) && chord.getPredecessorID().compareTo(getID()) == 1) ){
 			result = true;
 		}
 
@@ -268,11 +272,19 @@ public class BattleChord {
      * attack!
      */
     public void fire(){
-        ID target = evalTarget(getNextTargetPlayer());
+    	ID target;
+    	if(chordInitPhase){
+    		target = getNextTargetByPred(curAttackSuc);
+    		lastTarget = target;
+    	} else {
+    		target = evalTarget(getNextTargetPlayer());
+    		lastTarget = target;
+    	}
         if(target.isInInterval(chord.getPredecessorID(), this.getID())){
         	System.out.println("THIS COULD BE YOUR OWN SHIP! ;___;");
         } else {
-        	attackTarget(target);
+    		attacking = true;
+    		attackTarget(target);
         }
     }
 
@@ -282,7 +294,7 @@ public class BattleChord {
         battleground.newInformation(target, hit);
         chord.broadcast(target, hit);
         if(!gameover){
-        	//fire();
+        	fire();
         } else {
         	System.out.println("Stop shooting!");
         }
@@ -294,6 +306,11 @@ public class BattleChord {
 		
 	private void addPlayer(ID player, int groundsize, int shipQuantity){
 		 players.put(player, new Battleground(player, groundsize, shipQuantity));
+	}
+	
+	private void addPlayerWithSpace(ID fromID, ID toID, int groundsize, int shipQuantity){
+		Battleground battleground = new Battleground(fromID, toID, groundsize, shipQuantity);
+        players.put(toID, battleground);
 	}
 
     /**
@@ -312,9 +329,23 @@ public class BattleChord {
 
     public void newInformation(ID source, ID target, boolean hit){
         System.out.println("New information from: "+source);
+        if(chordInitPhase && attacking && target.equals(lastTarget)){
+            if(isNewPlayer(source)){
+            	addPlayerWithSpace(curAttackSuc,source, groundsize, shipQuantity);
+            } else {
+            	 players.get(source).setPredecessorID(curAttackSuc);
+            }
+        	curAttackSuc = source;
+        	if(source.equals(chord.getPredecessorID())){
+        		System.out.println("-------------INIT OVER-------------");
+        		this.chordInitPhase = false;
+        	}
+        	this.attacking = false;
+        }
+        
         if(isNewPlayer(source)){
             System.out.println("Adding player: "+source);
-        	addPlayer(source, groundsize, shipQuantity);
+            addPlayer(source, groundsize, shipQuantity);
         }
         players.get(source).newInformation(target, hit);
         if(players.get(source).isGameOver()){
@@ -337,17 +368,27 @@ public class BattleChord {
 		);
 	}
 
+	private ID getNextTargetByPred(ID pred){
+		ID result;
+    	if(pred.equals(this.highestKey)) {
+    		result = ID.valueOf(BigInteger.ZERO);
+    	} else {
+    		//double add plus one because ID.isInInterval(from,to) does not work when from is interval border
+    		result = ID.valueOf(pred.toBigInteger().add(BigInteger.ONE).add(BigInteger.ONE));
+    	}
+    	return result;
+	}
+	
     //now shoot on attackable Player
 	private ID getNextTargetPlayer(){
         Iterator<Entry<ID, Battleground>> playersIter = players.entrySet().iterator();
         Entry<ID, Battleground> player = playersIter.next();
-        
+
         if(!player.getValue().isInstantiatedPlayer()){
 	        while(playersIter.hasNext() && !player.getValue().isInstantiatedPlayer()){
 	        	player = playersIter.next();
 	        }
         }
-
         return player.getKey();
 	}
 }

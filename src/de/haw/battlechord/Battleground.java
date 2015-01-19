@@ -62,13 +62,14 @@ public class Battleground {
     private void initBoard(){
         if(predecessorID != null) {
             BigInteger startID = predecessorID.toBigInteger().add(BigInteger.ONE);
+            boardKeys = new ArrayList<ID>();
             for (Long i = 0l; i < groundsize; i++) {
                 BigInteger id = startID.add(new BigInteger(i.toString()).multiply(intervallSize));
                 board.put(
                         ID.valueOf(id.mod(addressSpace)),
                 UNKNOWN);
+                boardKeys.add(ID.valueOf(id.mod(addressSpace)));
             }
-            boardKeys = new ArrayList<ID>(board.keySet());
             instantiated = true;
         }
     }
@@ -97,7 +98,7 @@ public class Battleground {
      * When predecessor is found, the Battleground can be instantiated
      * @param predecessor
      */
-    private void setPredecessorID (ID predecessor){
+    public void setPredecessorID (ID predecessor){
         this.predecessorID = predecessor;
         this.intervallSize = getDistance(ID.valueOf(predecessorID.toBigInteger().add(BigInteger.ONE)),ownID).divide(BigInteger.valueOf(groundsize)).abs();
         initBoard();
@@ -155,7 +156,6 @@ public class Battleground {
                 interval = from;
                 break;
             }
-
         }
         return interval;
     }
@@ -166,7 +166,9 @@ public class Battleground {
      * @return true, if ID is in SHIP or WRACK interval, else false (WATER)
      */
 	public boolean isHit(ID target){
+		System.out.println(">>>>>>>>"+target);
         int result = board.get(attackedInterval(target));
+		System.out.println(">>>>>>>>"+attackedInterval(target));
         return (result != WATER);
 	}
 
@@ -226,7 +228,7 @@ public class Battleground {
     public String toString(){
         String s = "Battleground("+this.ownID+")\n";
         s+= "Predecessor: "+this.predecessorID+"\n";
-        Collections.sort(boardKeys);
+        //Collections.sort(boardKeys);
         for(ID id : boardKeys){
             s+= "("+board.get(id)+")"+ id.toString()+"\n";
         }
