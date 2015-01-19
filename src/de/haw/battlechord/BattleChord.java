@@ -273,17 +273,19 @@ public class BattleChord {
      */
     public void fire(){
     	ID target;
-    	if(chordInitPhase){
+    	ID critTarget = getCriticalPlayer();
+    	if(critTarget != null){
+    		target = evalTarget(critTarget);
+    	}else if(chordInitPhase){
     		target = getNextTargetByPred(curAttackSuc);
-    		lastTarget = target;
     	} else {
     		target = evalTarget(getNextTargetPlayer());
-    		lastTarget = target;
     	}
         if(target.isInInterval(chord.getPredecessorID(), this.getID())){
         	System.out.println("THIS COULD BE YOUR OWN SHIP! ;___;");
         } else {
     		attacking = true;
+    		lastTarget = target;
     		attackTarget(target);
         }
     }
@@ -340,7 +342,6 @@ public class BattleChord {
         		System.out.println("-------------INIT OVER-------------");
         		this.chordInitPhase = false;
         	}
-        	this.attacking = false;
         }
         
         if(isNewPlayer(source)){
@@ -348,10 +349,11 @@ public class BattleChord {
             addPlayer(source, groundsize, shipQuantity);
         }
         players.get(source).newInformation(target, hit);
-        if(players.get(source).isGameOver()){
+        if(players.get(source).isGameOver() && attacking && target.equals(lastTarget)){
         	gameover  = true;
             announceVictory(source);
         }
+    	this.attacking = false;
     }
 	
 	private void announceVictory(ID loser){
@@ -381,14 +383,28 @@ public class BattleChord {
 	
     //now shoot on attackable Player
 	private ID getNextTargetPlayer(){
-        Iterator<Entry<ID, Battleground>> playersIter = players.entrySet().iterator();
-        Entry<ID, Battleground> player = playersIter.next();
-
-        if(!player.getValue().isInstantiatedPlayer()){
-	        while(playersIter.hasNext() && !player.getValue().isInstantiatedPlayer()){
-	        	player = playersIter.next();
-	        }
+		int playerShips;
+        int leastShipsIntact = this.shipQuantity +1;
+        ID nextTargetPlayer = null;
+        for(ID playerID : players.keySet()){
+            playerShips = players.get(playerID).getShipsIntact();
+            if((playerShips > 0) && (playerShips < leastShipsIntact)){
+                leastShipsIntact = playerShips;
+                nextTargetPlayer = playerID;
+            }
         }
-        return player.getKey();
+        return nextTargetPlayer;
+	}
+	
+	private ID getCriticalPlayer(){
+		int playerShips;
+        ID critPlayer = null;
+        for(ID playerID : players.keySet()){
+            playerShips = players.get(playerID).getShipsIntact();
+            if(playerShips == 1){
+            	critPlayer = playerID;
+            }
+        }
+        return critPlayer;
 	}
 }
