@@ -363,7 +363,7 @@ public class BattleChord {
 		System.out.println(
 				"------------------------------------------------------------------\n"
 				+ "VIIICTORY!!!"+df.format(dateobj)+"\n"
-				+ "You have fought well commander! It is a honor to serve you.\n"
+				+ "You have fought well commander! It is an honor to serve you.\n"
 				+ "Following fleet has been destroyed:\n\t"+loser+"\n"
 				+ "Last hit information was:\n\t"+chord.getTransactionId()+"\n"
 				+"-----------------------------------------------------------------"
