@@ -1,9 +1,6 @@
 package de.haw.battlechord;
 
-import de.uniba.wiai.lspi.chord.com.Broadcast;
-import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Node;
-import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
@@ -17,7 +14,6 @@ import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Map.Entry;
 
 public class BattleChord {
 	
