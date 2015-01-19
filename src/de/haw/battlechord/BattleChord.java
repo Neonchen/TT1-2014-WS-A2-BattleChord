@@ -1,6 +1,9 @@
 package de.haw.battlechord;
 
+import de.uniba.wiai.lspi.chord.com.Broadcast;
+import de.uniba.wiai.lspi.chord.com.CommunicationException;
 import de.uniba.wiai.lspi.chord.com.Node;
+import de.uniba.wiai.lspi.chord.com.RefsAndEntries;
 import de.uniba.wiai.lspi.chord.data.ID;
 import de.uniba.wiai.lspi.chord.data.URL;
 import de.uniba.wiai.lspi.chord.service.ServiceException;
@@ -8,6 +11,7 @@ import de.uniba.wiai.lspi.chord.service.impl.ChordImpl;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -118,7 +122,7 @@ public class BattleChord {
 	        	case "init":
 	        		game.init();
 	        		System.out.println("Ready for battle commander!");
-	        		if(game.hasHighestNodeId()) System.out.println("Enemies in range! FIIIIIRE ON YOUR COMMAND!");
+	        		if(game.ownsHighestKey()) System.out.println("Enemies in range! FIIIIIRE ON YOUR COMMAND!");
 	        		break;
 	        	case "fire":
 	        		game.fire();
@@ -232,8 +236,14 @@ public class BattleChord {
 		return chord.getID();
 	}
 	
-	private boolean hasHighestNodeId(){
-		return this.successor.getNodeID().compareTo(chord.getID()) == -1;
+	private boolean ownsHighestKey(){
+		boolean result = false;
+		ID highestKey = ID.valueOf(new BigDecimal( Math.pow(2, 160) - 1).toBigInteger());
+		if(chord.getID().equals(highestKey) || (!chord.getPredecessorID().equals(highestKey) && chord.getPredecessorID().compareTo(getID()) == 1) ){
+			result = true;
+		}
+
+		return result;
 	}
 
 	private Node getSuccessor(){
