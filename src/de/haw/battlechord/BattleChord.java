@@ -163,7 +163,13 @@ public class BattleChord {
     	System.out.println("Good Bye Commander!");
         scanner.close();
 	}
-	
+	/**
+	 * sets basic information for open chord and game
+	 * @param ownIP
+	 * @param ownPort
+	 * @param groundSize
+	 * @param shipQuantity
+	 */
 	BattleChord(String ownIP, String ownPort, int groundSize, int shipQuantity){
 		de.uniba.wiai.lspi.chord.service.PropertiesLoader.loadPropertyFile();
 		protocol = URL.KNOWN_PROTOCOLS.get(URL.SOCKET_PROTOCOL);
@@ -179,7 +185,9 @@ public class BattleChord {
 		this.groundsize = groundSize;
 		this.shipQuantity = shipQuantity;
 	}
-	
+	/**
+	 * creates the chord ring
+	 */
 	private void createAndJoinBattle(){
 		try {
 			chord.create(localURL);
@@ -187,7 +195,11 @@ public class BattleChord {
 			throw new RuntimeException("Could not create DHT!", e);
 		}
 	}
-	
+	/**
+	 * join a chord ring
+	 * @param bootstrapIP
+	 * @param bootstrapPort
+	 */
 	private void joinBattle(String bootstrapIP,String bootstrapPort){
 		try {
 			bootstrapURL = new URL(protocol + "://"+bootstrapIP+":"+bootstrapPort+"/");
@@ -196,12 +208,16 @@ public class BattleChord {
 			throw new RuntimeException(e);
 		}
 	}
-	
+	/**
+	 * leave a chord ring
+	 */
 	private void leaveBattle(){
 		chord.leave();
 	}
-	
-	//TODO: exceptions not handled when chord ring is empty (chould just happen for chordring create node and no successor is available)
+	/**
+	 * init game client, sets known players from ft aswell as suc and pred nodes
+	 */
+	//NOTE: exceptions not handled when chord ring is empty (chould just happen for chordring create node and no successor is available)
 	private void init(){
 		List<Node>knownPlayers = chord.getFingerTable();
 		this.battleground = new Battleground(chord.getPredecessorID(), chord.getID(), groundsize, shipQuantity);
@@ -221,7 +237,10 @@ public class BattleChord {
             }
         }
 	}
-	
+	/**
+	 * formated string of other known players with ID ships intact
+	 * @return formated string
+	 */
 	private String printPlayers(){
 		String result = "ID | Ships Intact\n"
 						+ "------------------------------------------------------------\n";
@@ -232,15 +251,24 @@ public class BattleChord {
 		
 		return result;
 	}
-	
+	/**
+	 * formated string of fingertable
+	 * @return formated string
+	 */
 	private String printft() {
 		return chord.printFingerTable();
 	}
-	
+	/**
+	 * own node id
+	 * @return node id
+	 */
 	private ID getID(){
 		return chord.getID();
 	}
-	
+	/**
+	 * check if own node is highest node
+	 * @return true if own node is highest node
+	 */
 	private boolean ownsHighestKey(){
 		boolean result = false;
 		if(chord.getID().equals(this.highestKey) || (!chord.getPredecessorID().equals(this.highestKey) && chord.getPredecessorID().compareTo(getID()) == 1) ){
@@ -249,7 +277,10 @@ public class BattleChord {
 
 		return result;
 	}
-
+	/**
+	 * gets successor node from fingertable
+	 * @return successor node
+	 */
 	private Node getSuccessor(){
 		Node successor = null;
 		List<Node> fingerTable = chord.getSortedUniqueFingerTable();
@@ -268,8 +299,10 @@ public class BattleChord {
 	}
 
     /**
-     * choose next player to attack, then id to attack for this player
-     * attack!
+     * attacks player
+     * 1. if it is his last ship
+     * 2. next player in chord ring with unknown address space
+     * 3. player with known address space and least ships left
      */
     public void fire(){
     	ID target;
@@ -289,7 +322,10 @@ public class BattleChord {
     		attackTarget(target);
         }
     }
-
+    /**
+     * checks if a shoot hit you, logs new information and goes on with firing if game is still running
+     * @param target an other player attacked
+     */
     public void getShoot(ID target){
         boolean hit = battleground.isHit(target);
         System.out.println("They shoot on us! "+hit);
@@ -301,15 +337,30 @@ public class BattleChord {
         	System.out.println("Stop shooting!");
         }
     }
-
+    /**
+     * checks if a player is new
+     * @param player
+     * @return true if he is knew
+     */
 	private boolean isNewPlayer(ID player){
 		return !players.containsKey(player);
 	}
-		
+	/**
+	 * adds new player to the game
+	 * @param player
+	 * @param groundsize
+	 * @param shipQuantity
+	 */
 	private void addPlayer(ID player, int groundsize, int shipQuantity){
 		 players.put(player, new Battleground(player, groundsize, shipQuantity));
 	}
-	
+	/**
+	 * adds new player to the game and inits his address space
+	 * @param fromID
+	 * @param toID
+	 * @param groundsize
+	 * @param shipQuantity
+	 */
 	private void addPlayerWithSpace(ID fromID, ID toID, int groundsize, int shipQuantity){
 		Battleground battleground = new Battleground(fromID, toID, groundsize, shipQuantity);
         players.put(toID, battleground);
@@ -324,11 +375,20 @@ public class BattleChord {
 		RetrieveThread retrieve= new RetrieveThread(chord, target);
 		retrieve.run();
 	}
-
+	/**
+	 * evaluates a field from a player which was not attacked yet
+	 * @param player
+	 * @return
+	 */
 	private ID evalTarget(ID player){
         return players.get(player).getNextTargetField();
 	}
-
+	/**
+	 * logs new information from broadcast, adds new players and announces if you have one the game
+	 * @param source
+	 * @param target
+	 * @param hit
+	 */
     public void newInformation(ID source, ID target, boolean hit){
         System.out.println("New information from: "+source);
         if(chordInitPhase && attacking && target.equals(lastTarget)){
@@ -355,7 +415,11 @@ public class BattleChord {
         }
     	this.attacking = false;
     }
-	
+    
+    /**
+     * output for winning the game
+     * @param loser who just lost the game
+     */
 	private void announceVictory(ID loser){
 		DateFormat df = new SimpleDateFormat("HH:mm:ss:SSS");
 	    Date dateobj = new Date();
@@ -369,7 +433,13 @@ public class BattleChord {
 				+"-----------------------------------------------------------------"
 		);
 	}
-
+	
+	/**
+	 * gets ID to attack from address space of a known node
+	 * (the predecessor oft the know we like to know the address space from to init him)
+	 * @param pred
+	 * @return target to attack
+	 */
 	private ID getNextTargetByPred(ID pred){
 		ID result;
     	if(pred.equals(this.highestKey)) {
@@ -381,7 +451,10 @@ public class BattleChord {
     	return result;
 	}
 	
-    //now shoot on attackable Player
+	/**
+	 * gets player with least ships intact
+	 * @return player to attack
+	 */
 	private ID getNextTargetPlayer(){
 		int playerShips;
         int leastShipsIntact = this.shipQuantity +1;
@@ -396,6 +469,10 @@ public class BattleChord {
         return nextTargetPlayer;
 	}
 	
+	/**
+	 * checks if a player is in a critical situation (just 1 ship left)
+	 * @return player to attack or null if no critical player exists
+	 */
 	private ID getCriticalPlayer(){
 		int playerShips;
         ID critPlayer = null;
