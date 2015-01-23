@@ -21,6 +21,8 @@ public class Battleground {
 
     private ID ownID;
     private ID predecessorID = null;
+    private ID maxID = ID.valueOf(addressSpace);
+    private ID zeroID = ID.valueOf(BigInteger.ZERO);
 
     private int UNKNOWN = 0;
     private int WATER = 1;
@@ -150,13 +152,29 @@ public class Battleground {
     private ID attackedInterval(ID target){
         ID interval = null;
         ID to;
+        for(int i = 0; i < groundsize; i++){
+            ID from = boardKeys.get(i);
+            if(i+1 < groundsize){
+                to = boardKeys.get(i+1);
+            } else{
+                to = ownID;
+            }
+            if(from.compareTo(to) < 0 && target.isInInterval(from, to)){
+                interval = from;
+                i = groundsize;
+            }else if(from.compareTo(to) > 0 && (target.isInInterval(from, maxID) ||target.isInInterval(zeroID, to) )){
+                interval = from;
+                i = groundsize;
+            }
+        }
+        /*
         for(ID from : boardKeys) {
             to = ID.valueOf((from.toBigInteger().add(intervallSize)).mod(addressSpace));
-            if(target.isInInterval(from, to)){
+            if(from.compareTo(to) && target.isInInterval(from, to)){
                 interval = from;
                 break;
             }
-        }
+        }*/
         return interval;
     }
 
