@@ -156,21 +156,24 @@ public class Battleground {
             ID from = boardKeys.get(i);
             if(i+1 < groundsize){
                 to = boardKeys.get(i+1);
-            } else{
+            } else{//last interval
                 to = ownID;
             }
-            if(from.compareTo(to) < 0 && target.isInInterval(from, to)){
+            if((from.compareTo(to) < 0) && (target.isInInterval(from, to))){
                 interval = from;
                 i = groundsize;
-            }else if(from.compareTo(to) > 0 && (target.isInInterval(from, maxID) ||target.isInInterval(zeroID, to) )){
+            }else if((from.compareTo(to)) > 0 && (target.isInInterval(from, maxID) ||target.isInInterval(zeroID, to) )){
                 interval = from;
                 i = groundsize;
             }
         }
+        if(interval == null){
+            System.out.println("No interval found for "+target);
+        }
         /*
         for(ID from : boardKeys) {
             to = ID.valueOf((from.toBigInteger().add(intervallSize)).mod(addressSpace));
-            if(from.compareTo(to) && target.isInInterval(from, to)){
+            if(target.isInInterval(from, to)){
                 interval = from;
                 break;
             }
